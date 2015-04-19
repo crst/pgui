@@ -1,0 +1,22 @@
+
+#query-editor {
+    border: 1px solid black;
+}
+
+#query-run {
+    margin-top: 1em;
+}
+
+#query-stats {
+    text-align: right;
+}
+
+#query-result {
+    margin-top: 2em;
+    overflow-x: scroll;
+}
+
+#csv-result {
+    width: 100%;
+    min-height: 40px;
+}

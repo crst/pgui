@@ -1,0 +1,8 @@
+include README
+
+recursive-include src/pgui/queries *
+recursive-include src/pgui/static *
+
+prune build
+prune dist
+prune pgui.egg-info

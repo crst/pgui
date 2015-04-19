@@ -1,0 +1,16 @@
+
+.page-link {
+    border: 1px solid #ffffff;
+    border-radius: 4px;
+    height: 9em;
+}
+
+.page-link:hover {
+    border: 1px solid #333333;
+}
+
+.page-icon {
+    float: left;
+    margin: 12px;
+    font-size: 8em;
+}

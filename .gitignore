@@ -1,0 +1,9 @@
+*.pyc
+__pycache__
+
+MANIFEST
+build/*
+dist/*
+
+pgui.egg-info/*
+src/pgui.egg-info/*
