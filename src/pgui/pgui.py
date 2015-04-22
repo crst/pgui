@@ -31,10 +31,9 @@ def login():
     if request.method == 'POST':
         name = 'name' in request.form and escape(request.form['name']) or ''
         pw = 'password' in request.form and escape(request.form['password']) or ''
-        db = 'database' in request.form and escape(request.form['database']) or ''
         host = 'host' in request.form and escape(request.form['host']) or 'localhost'
         port = 'port' in request.form and int(escape(request.form['port'])) or 5432
-        login_user(User(name, pw, db, host, port))
+        login_user(User(name, pw, 'postgres', host, port))
         return redirect(request.args.get('next') or url_for('index'))
 
     return pages.index.Login().render()
@@ -53,7 +52,7 @@ def logout():
 @app.route('/index')
 @login_required
 def index():
-    return pages.index.Index().render()
+    return pages.index.Index(request.args).render()
 
 
 # -----------------------------------------------------------------------------

@@ -2,6 +2,7 @@ import json
 import time
 
 from page import Html
+from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
 from pg import pg_connection, query
 
@@ -15,10 +16,11 @@ query_page = Blueprint('query', __name__)
 @query_page.route('/query')
 @login_required
 def query_view():
-    return Query().render()
+    return Query(request.args).render()
 
 
 def Query(params=None):
+    handle_params(params)
     query = Html()
 
     # Header

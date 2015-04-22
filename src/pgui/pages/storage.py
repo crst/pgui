@@ -1,9 +1,10 @@
 import json
 
-from flask import Blueprint
+from flask import Blueprint, request
 from flask.ext.login import current_user, login_required
 
 from page import Html
+from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
 from pg import pg_connection, query
 
@@ -13,10 +14,11 @@ storage_page = Blueprint('storage', __name__)
 @storage_page.route('/storage')
 @login_required
 def storage_view():
-    return Storage().render()
+    return Storage(request.args).render()
 
 
 def Storage(params=None):
+    handle_params(params)
     storage = Html()
 
     # Header

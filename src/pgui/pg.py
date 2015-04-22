@@ -39,7 +39,14 @@ class User(object):
         self.database = db
         self.host = host
         self.port = port
-        User.users[name] = (pw, db, host, port)
+        self._update_settings()
+
+    def set_database(self, database):
+        self.database = database
+        self._update_settings()
+
+    def _update_settings(self):
+        User.users[self.name] = (self.password, self.database, self.host, self.port)
 
     def get_config(self):
         return (self.name, self.password, self.database, self.host, self.port)

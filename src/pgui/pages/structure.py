@@ -1,7 +1,8 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from flask.ext.login import login_required
 
 from page import Html
+from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
 from pg import pg_connection, query
 
@@ -11,10 +12,11 @@ structure_page = Blueprint('structure', __name__)
 @structure_page.route('/structure')
 @login_required
 def structure_view():
-    return Structure().render()
+    return Structure(request.args).render()
 
 
 def Structure(params=None):
+    handle_params(params)
     structure = Html()
 
     # Header

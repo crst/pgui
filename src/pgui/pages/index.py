@@ -1,3 +1,6 @@
+from flask import escape
+from flask.ext.login import current_user
+
 from page import Html
 from pages.shared import Header, Navigation, Footer
 from pg import pg_connection, query
@@ -26,7 +29,6 @@ PAGES = [
 ]
 
 
-
 def Login(params=None, title=None):
     login = Html()
     login.add_text('<!DOCTYPE html>')
@@ -46,9 +48,6 @@ def Login(params=None, title=None):
     login.label('Password', fr='password', cls='sr-only').close()
     login.input(tpe='password', id='password', name='password', cls='form-control', placeholder='Password')
 
-    login.label('Database', fr='database', cls='sr-only').close()
-    login.input(tpe='input', id='database', name='database', cls='form-control', placeholder='Database')
-
     login.label('Host', fr='host', cls='sr-only').close()
     login.input(tpe='input', id='host', name='host', cls='form-control', value='localhost')
 
@@ -65,13 +64,41 @@ def Login(params=None, title=None):
     return login
 
 
+def handle_params(params):
+    if 'database' in params:
+        current_user.set_database(escape(params['database']))
+
+
 def Index(params=None):
+    handle_params(params)
     index = Html()
 
     # Header
     index.add_html(Header(title='Index'))
     index.add_html(Navigation(page='index'))
     index.div(cls='container-fluid')
+
+    with pg_connection(*current_user.get_config()) as (c, e):
+        c.execute(query('list-databases'))
+        data = c.fetchall()
+
+    index.div(cls='row').div(cls='col-md-2')
+    index.div(cls='btn-group')
+    index.button('Switch database', cls='btn btn-default dropdown-toggle', data_toggle='dropdown', aria_expanded='false').close()
+    index.ul(cls='dropdown-menu', role='menu')
+    for i, d in enumerate(data):
+        index.li().a(d[0], href='index?database=%s' % d[0]).close().close()
+        if i < len(data) - 1:
+            index.li(cls='divider').close()
+    index.close()
+    index.close()
+    index.close()
+
+    index.div(cls='col-md-10')
+    index.add_text('Current database: %s' % current_user.database)
+    index.close()
+
+    index.close()
 
     # Pages
     cols = 12
