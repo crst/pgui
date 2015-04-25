@@ -55,9 +55,9 @@ def Navigation(params=None, page=None):
 
     nav.div(id='navbar', cls='navbar-collapse collapse')
     nav.ul(cls='nav navbar-nav')
-    for page in pages.index.PAGES:
+    for i, page in enumerate(pages.index.PAGES, 1):
         active = page['name'] == page and 'active' or ''
-        nav.li(cls=active).a(href='/%s' % page['name'])
+        nav.li(cls=active).a(id='page-%s' % i, href='/%s' % page['name'])
         nav.span(cls='glyphicon glyphicon-%s' % page['icon']).close()
         nav.add_text(' %s' % page['name'].title())
         nav.close().close()

@@ -1,12 +1,13 @@
-1
+
 PGUI.QUERY = {};
 
 $(document).ready(function () {
     PGUI.QUERY.editor = CodeMirror.fromTextArea($('#query-editor').get(0),
                                                 {'mode': 'text/x-sql',
                                                  'keyMap': PGUI.QUERY.keymap,
-                                                 'extraKeys': {'Ctrl-Space': 'autocomplete',
-                                                               'Alt-/': 'autocomplete'},
+                                                 'extraKeys': {'Alt-/': 'autocomplete',
+                                                               'Ctrl-Enter': PGUI.QUERY.run_query,
+                                                               'Alt-Enter': PGUI.QUERY.run_explain},
                                                  'lineNumbers': true,
                                                  'autofocus': true});
     PGUI.QUERY.bind_events();
@@ -20,7 +21,10 @@ PGUI.QUERY.bind_events = function () {
 
 
 PGUI.QUERY.run_query = function () {
-    var query = PGUI.QUERY.editor.getValue();
+    var query = PGUI.QUERY.editor.getSelection();
+    if (!query) {
+        query = PGUI.QUERY.editor.getValue();
+    }
     $.ajax({
         'method': 'POST',
         'url': 'query/run-query',

@@ -54,7 +54,7 @@ def Login(params=None, title=None):
     login.label('Port', fr='port', cls='sr-only').close()
     login.input(tpe='input', id='port', name='port', cls='form-control', value='5432')
 
-    login.button('Connect', cls='btn btn-lg btn-success btn-block', tpe='submit').close()
+    login.button('Connect', args=['autofocus'], cls='btn btn-lg btn-success btn-block', tpe='submit').close()
     login.close('form')
 
     login.div(cls='login')

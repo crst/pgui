@@ -38,13 +38,14 @@ class Html(object):
         return reduce(lambda acc, val: acc.replace(val[0], val[1]), self.tokens.items(), text)
 
     def add(self, tag, content='', **kwargs):
-        params = ''.join([' %s="%s"' % (self._replace_tokens(k), v) for k, v in kwargs.items()])
+        params = ''.join([' %s="%s"' % (self._replace_tokens(k), v) for k, v in kwargs.items() if k != 'args'])
+        args = 'args' in kwargs and ' '.join(kwargs['args']) or ''
         if tag in self.ctags:
             closing = ' /'
         else:
             self.stack.append(tag)
             closing = ''
-        self.data.append('<%s%s%s>%s\n' % (tag, params, closing, content))
+        self.data.append('<%s %s%s%s>%s\n' % (tag, args, params, closing, content))
         return self
 
     def add_text(self, text):
