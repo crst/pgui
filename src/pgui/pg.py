@@ -59,7 +59,8 @@ class User(object):
                                    host=self.host,
                                    port=self.port)
             con.close()
-        except psycopg2.Error:
+        except psycopg2.Error as err:
+            flash(str(err))
             return False
 
         return True

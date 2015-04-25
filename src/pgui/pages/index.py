@@ -56,9 +56,14 @@ def Login(params=None, title=None):
 
     login.button('Connect', cls='btn btn-lg btn-success btn-block', tpe='submit').close()
     login.close('form')
+
+    login.div(cls='login')
+    if 'err' in params and params['err']:
+        for err in params['err']:
+            login.code(err).close()
+    login.close()
+
     login.close('div')
-
-
     login.close('body').close()
 
     return login

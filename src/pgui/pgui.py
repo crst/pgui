@@ -1,6 +1,6 @@
 from importlib import import_module
 
-from flask import Flask, request, redirect, url_for, escape
+from flask import Flask, request, redirect, url_for, escape, get_flashed_messages
 from flask.ext.login import LoginManager, login_user, logout_user, login_required
 
 import config
@@ -17,6 +17,8 @@ app.secret_key = config.SECRET_KEY
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+login_manager.session_protection = 'strong'
+login_manager.login_message = ''
 login_manager.login_view = 'login'
 
 @login_manager.user_loader
@@ -36,7 +38,8 @@ def login():
         login_user(User(name, pw, 'postgres', host, port))
         return redirect(request.args.get('next') or url_for('index'))
 
-    return pages.index.Login().render()
+    err = get_flashed_messages()
+    return pages.index.Login({'err': err}).render()
 
 @app.route("/logout")
 @login_required
