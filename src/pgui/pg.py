@@ -2,8 +2,11 @@ from contextlib import contextmanager
 import os
 from pkg_resources import resource_string
 
+from flask import flash
 import psycopg2
 psycopg2.extensions.string_types.clear()
+
+from config import DEFAULT_KEYMAP
 
 
 @contextmanager
@@ -33,20 +36,26 @@ def query(name):
 class User(object):
     users = {}
 
-    def __init__(self, name, pw, db, host='localhost', port=5432):
+    def __init__(self, name, pw, db, host='localhost', port=5432, keymap=DEFAULT_KEYMAP):
         self.name = name
         self.password = pw
         self.database = db
         self.host = host
         self.port = port
+        self.keymap = keymap
         self._update_settings()
+
 
     def set_database(self, database):
         self.database = database
         self._update_settings()
 
+    def set_keymap(self, keymap):
+        self.keymap = keymap
+        self._update_settings()
+
     def _update_settings(self):
-        User.users[self.name] = (self.password, self.database, self.host, self.port)
+        User.users[self.name] = (self.password, self.database, self.host, self.port, self.keymap)
 
     def get_config(self):
         return (self.name, self.password, self.database, self.host, self.port)

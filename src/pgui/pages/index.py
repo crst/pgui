@@ -73,6 +73,9 @@ def handle_params(params):
     if 'database' in params:
         current_user.set_database(escape(params['database']))
 
+    if 'keymap' in params:
+        current_user.set_keymap(escape(params['keymap']))
+
 
 def Index(params=None):
     handle_params(params)

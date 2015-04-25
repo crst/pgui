@@ -16,12 +16,17 @@ def Header(params=None, title=None, css=None, js=None):
     header.link(href='static/pgui.css', rel='stylesheet')
     header.link(href='static/lib/bootstrap/bootstrap-3.3.4-dist/css/bootstrap.css', rel='stylesheet')
     header.link(href='static/lib/codemirror/codemirror-5.1/lib/codemirror.css', rel='stylesheet')
+    header.link(href='static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.css', rel='stylesheet')
     if css:
         for c in css:
             header.link(href=c, rel='stylesheet')
     header.script(src='static/lib/bootstrap/bootstrap-3.3.4-dist/js/bootstrap.js').close()
     header.script(src='static/lib/codemirror/codemirror-5.1/lib/codemirror.js').close()
+    header.script(src='static/lib/codemirror/codemirror-5.1/keymap/emacs.js').close()
+    header.script(src='static/lib/codemirror/codemirror-5.1/keymap/vim.js').close()
+    header.script(src='static/lib/codemirror/codemirror-5.1/keymap/sublime.js').close()
     header.script(src='static/lib/codemirror/codemirror-5.1/mode/sql/sql.js').close()
+    header.script(src='static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.js').close()
     if js:
         for j in js:
             header.script(src=j).close()

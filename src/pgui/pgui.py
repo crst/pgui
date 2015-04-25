@@ -24,8 +24,7 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(name):
     if name in User.users:
-        pw, db, host, port = User.users[name]
-        return User(name, pw, db, host, port)
+        return User(name, *User.users[name])
     return None
 
 @app.route("/login", methods=["GET", "POST"])

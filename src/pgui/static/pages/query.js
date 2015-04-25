@@ -1,9 +1,14 @@
-
+1
 PGUI.QUERY = {};
 
-
 $(document).ready(function () {
-    PGUI.QUERY.editor = CodeMirror.fromTextArea($('#query-editor').get(0), {'mode': 'SQL', 'lineNumbers': true});
+    PGUI.QUERY.editor = CodeMirror.fromTextArea($('#query-editor').get(0),
+                                                {'mode': 'text/x-sql',
+                                                 'keyMap': PGUI.QUERY.keymap,
+                                                 'extraKeys': {'Ctrl-Space': 'autocomplete',
+                                                               'Alt-/': 'autocomplete'},
+                                                 'lineNumbers': true,
+                                                 'autofocus': true});
     PGUI.QUERY.bind_events();
 });
 
@@ -42,16 +47,16 @@ PGUI.QUERY.display_query_result = function (result) {
     $('#query-stats').html('');
     $('#result-tab').tab('show');
 
-    var t0 = Date.now()
+    var t0 = Date.now();
     var tbl = [], csv = [], i, j;
-    if (result['success']) {
-        var d = result['data'];
+    if (result.success) {
+        var d = result.data;
 
         tbl.push('<table class="table table-condensed table-striped table-hover"><tr>');
-        columns = result['columns'];
+        var columns = result.columns;
         for (i=0; i<columns.length; i++) {
             tbl.push('<th>' + columns[i] + '</th>');
-            csv.push('"' + columns[i] + '"' + (i == columns.length - 1 ? '' : ','));
+            csv.push('"' + columns[i] + '"' + (i === columns.length - 1 ? '' : ','));
         }
         tbl.push('</tr>');
         csv.push('\n');
@@ -60,7 +65,7 @@ PGUI.QUERY.display_query_result = function (result) {
             tbl.push('<tr>');
             for (j=0; j<d[i].length; j++) {
                 tbl.push('<td>' + d[i][j] + '</td>');
-                csv.push('"' + d[i][j] + '"' + (j == d[i].length - 1 ? '' : ','));
+                csv.push('"' + d[i][j] + '"' + (j === d[i].length - 1 ? '' : ','));
             }
             tbl.push('</tr>');
             csv.push('\n');
@@ -90,14 +95,14 @@ PGUI.QUERY.display_query_result = function (result) {
 
 PGUI.QUERY.display_explain_result = function (result) {
     $('#explain-tab').tab('show');
-    var plans = result['data'];
+    var plans = result.data;
 
     // TODO
     for (var i in plans) {
         var plan = plans[i];
         var graph = new Springy.Graph();
 
-        var plan_root = plan['Plan'];
+        var plan_root = plan.Plan;
         var graph_root = graph.newNode({
             'label': plan_root['Node Type']
         });
@@ -105,13 +110,13 @@ PGUI.QUERY.display_explain_result = function (result) {
                            'plan_node': plan_root}];
 
         while (plan_nodes.length > 0) {
-            var node = plan_nodes.shift()
+            var node = plan_nodes.shift();
 
-            if ('Plans' in node['plan_node']) {
-                for (var j in node['plan_node']['Plans']) {
-                    var plan_sub_node = node['plan_node']['Plans'][j];
+            if ('Plans' in node.plan_node) {
+                for (var j in node.plan_node.Plans) {
+                    var plan_sub_node = node.plan_node.Plans[j];
                     var graph_sub_node = graph.newNode({'label': plan_sub_node['Node Type']});
-                    graph.newEdge(graph_sub_node, node['graph_node'], {'color': 'red'});
+                    graph.newEdge(graph_sub_node, node.graph_node, {'color': 'red'});
 
                     plan_nodes.push({
                         'graph_node': graph_sub_node,

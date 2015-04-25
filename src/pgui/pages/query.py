@@ -26,9 +26,12 @@ def Query(params=None):
     # Header
     query.add_html(Header(title='Query',
                           js=['static/pages/query.js',
+                              'static/pages/query_completion.js',
+                              'static/pages/keywords.js',
                               'static/lib/springy/springy.js',
                               'static/lib/springy/springyui.js'],
                           css=['static/pages/query.css']))
+    query.script('PGUI.QUERY.keymap = "%s";' % current_user.keymap).close()
     query.add_html(Navigation(page='query'))
     query.div(cls='container-fluid')
 
