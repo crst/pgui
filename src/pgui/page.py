@@ -17,7 +17,7 @@ class Html(object):
             'nav',
             'p', 'pre',
             'span', 'svg',
-            'textarea',
+            'table', 'td', 'th', 'tr', 'textarea',
             'ul',
         )
         self.ctags = set(('meta', 'link'))
