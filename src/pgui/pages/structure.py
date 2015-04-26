@@ -1,6 +1,7 @@
 from collections import OrderedDict
+import json
 
-from flask import Blueprint, request
+from flask import Blueprint, request, escape
 from flask.ext.login import current_user, login_required
 
 from page import Html
@@ -76,11 +77,17 @@ def Structure(params=None):
             structure.tr()
             for tc in table_cols:
                 structure.th(tc).close()
+            structure.th(id='col-size-header-%s-%s' % (schema[0], table))
+            structure.a('Get column sizes',
+                        href='#',
+                        onclick='PGUI.STRUCTURE.get_col_size(\'%s\', \'%s\'); return false;' % (schema[0], table)).close()
+            structure.close()
             structure.close('tr')
             for row in zip(*data['column-data'].values()):
                 structure.tr()
                 for col in row:
                     structure.td(col).close()
+                structure.td(id='col-size-%s-%s-%s' % (schema[0], table, row[0])).close()
                 structure.close('tr')
             structure.close('table')
             structure.close('div')
@@ -108,7 +115,7 @@ def get_data():
         tables = c.fetchall()
 
     schema_cols = ['', 'tables', 'views', 'foreign tables', 'temporary tables', 'functions', 'sequences']
-    table_cols = ['Column name', 'Column type', 'Column default', 'Column is nullable'] #, 'Column size']
+    table_cols = ['Column name', 'Column type', 'Column default', 'Column is nullable']
     table_data = {}
     for table in tables:
         if table[0] not in table_data:
@@ -119,7 +126,6 @@ def get_data():
                 ('column-types', parse_pg_array(table[3])),
                 ('column-defaults', parse_pg_array(table[4])),
                 ('column-is-nullable', parse_pg_array(table[5])),
-                #('column-size', parse_pg_array(table[6])),
             ]),
             'table-size': table[6],
         }
@@ -128,3 +134,19 @@ def get_data():
 
 def parse_pg_array(arr):
     return arr.replace('{', '').replace('}', '').split(',')
+
+
+@structure_page.route('/structure/get-col-size', methods=['GET'])
+@login_required
+def get_col_size():
+    if 'table-schema' in request.args and 'table-name' in request.args:
+        params = {'table-schema': escape(request.args['table-schema']),
+                  'table-name': escape(request.args['table-name'])}
+
+        with pg_connection(*current_user.get_config()) as (c, e):
+            c.execute(query('get-column-size'), params)
+            data = c.fetchall()
+
+        return json.dumps(data)
+
+    return 'Please specify a table!'
