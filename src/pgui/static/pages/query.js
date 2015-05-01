@@ -4,9 +4,24 @@ PGUI.QUERY.EDITORS = {};
 PGUI.QUERY.eid = 1;
 
 $(document).ready(function () {
-    PGUI.QUERY.make_query_tab(PGUI.QUERY.eid);
+    if ('queries' in localStorage && !$.isEmptyObject(JSON.parse(localStorage.queries))) {
+        var q = JSON.parse(localStorage.queries);
+        for (var k in q) {
+            PGUI.QUERY.make_query_tab(k, q[k]);
+            PGUI.QUERY.eid = Math.max(PGUI.QUERY.eid, k);
+        }
+    } else {
+        PGUI.QUERY.make_query_tab(PGUI.QUERY.eid, '');
+    }
     PGUI.QUERY.bind_events();
 });
+
+
+PGUI.QUERY.refresh_editor = function (eid) {
+    window.setTimeout(function() {
+        PGUI.QUERY.EDITORS[eid].refresh();
+    }, 1);
+};
 
 
 PGUI.QUERY.bind_events = function () {
@@ -21,21 +36,36 @@ PGUI.QUERY.bind_events = function () {
 
     $('#add-tab').unbind().click(function () {
         PGUI.QUERY.eid += 1;
-        PGUI.QUERY.make_query_tab(PGUI.QUERY.eid);
+        PGUI.QUERY.make_query_tab(PGUI.QUERY.eid, '');
     });
 
-    $('.remove-editor-tab').click(function () {
+    $('.remove-editor-tab').unbind().click(function () {
         var eid = $(this).attr('data-eid');
         PGUI.QUERY.remove_query_tab(eid);
+    });
+
+    $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+        var eid = $(e.target).attr('data-eid');
+        if (eid) {
+            PGUI.QUERY.refresh_editor(eid);
+        }
+    });
+
+    $(window).unload(function() {
+        var storage = {};
+        for (var k in PGUI.QUERY.EDITORS) {
+            storage[k] = PGUI.QUERY.EDITORS[k].getValue();
+        }
+        localStorage.queries = JSON.stringify(storage);
     });
 };
 
 
-PGUI.QUERY.make_query_tab = function (eid) {
+PGUI.QUERY.make_query_tab = function (eid, query) {
     var active = (eid === 1) ? 'active' : '';
     var nav_content = [
         '<li id="query-editor-nav-', eid, '" role="presentation" class="', active, '">',
-        '<a href="#query-editor-tab-', eid, '" aria-controls="query-editor-tab-', eid, '" role="tab" data-toggle="tab">Query ', eid,
+        '<a href="#query-editor-tab-', eid, '" data-eid="', eid, '" aria-controls="query-editor-tab-', eid, '" role="tab" data-toggle="tab">Query ', eid,
         '<span id="remove-editor-tab-', eid, '" class="remove-editor-tab glyphicon glyphicon-remove" data-eid=', eid, ' aria-hidden="true"></span></a>',
         '</li>',
     ];
@@ -104,9 +134,11 @@ PGUI.QUERY.make_query_tab = function (eid) {
                                                        'extraKeys': {'Alt-/': 'autocomplete',
                                                                      'Ctrl-Enter': function () { PGUI.QUERY.run_query(eid); },
                                                                      'Alt-Enter': function () { PGUI.QUERY.run_explain(eid); }},
-                                                       //'lineNumbers': true,
+                                                       'lineNumbers': true,
                                                        'theme': 'solarized light',
                                                        'autofocus': true});
+    PGUI.QUERY.EDITORS[eid].setValue(query);
+    PGUI.QUERY.refresh_editor(eid);
     PGUI.QUERY.bind_events();
     $('a[href="#query-editor-tab-' + eid + '"]').tab('show');
 };
