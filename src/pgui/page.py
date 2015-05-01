@@ -20,7 +20,7 @@ class Html(object):
             'table', 'td', 'th', 'tr', 'textarea',
             'ul',
         )
-        self.ctags = set(('meta', 'link'))
+        self.ctags = set(('input', 'meta', 'link'))
         self.tokens = {
             'cls': 'class',
             'fr' : 'for',
@@ -56,7 +56,7 @@ class Html(object):
         self.data.append(data.render())
         return self
 
-    def close(self, tag=None):
+    def x(self, tag=None):
         if len(self.stack) > 0 and (not tag or tag == self.stack[-1]):
             tag = self.stack.pop()
         if tag:

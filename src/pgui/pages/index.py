@@ -30,43 +30,43 @@ PAGES = [
 
 
 def Login(params=None, title=None):
-    login = Html()
-    login.add_text('<!DOCTYPE html>')
-    login.html().head().title('pgui - Login').close()
-    login.link(href='static/lib/bootstrap/bootstrap-3.3.4-dist/css/bootstrap.css', rel='stylesheet')
-    login.link(href='static/login.css', rel='stylesheet')
-    login.close()
-    login.body()
+    h = Html()
+    h.add_text('<!DOCTYPE html>')
+    h.html().head().title('pgui - Login').x()
+    h.link(href='static/lib/bootstrap/bootstrap-3.3.4-dist/css/bootstrap.css', rel='stylesheet')
+    h.link(href='static/login.css', rel='stylesheet')
+    h.x()
+    h.body()
 
-    login.div(cls='container')
-    login.form(method='POST', cls='login')
-    login.h2('Connect to a database', cls='login-header').close()
+    h.div(cls='container')
+    h.form(method='POST', cls='login')
+    h.h2('Connect to a database', cls='login-header').x()
 
-    login.label('User name', fr='name', cls='sr-only').close()
-    login.input(tpe='input', id='name', name='name', cls='form-control', placeholder='User name')
+    h.label('User name', fr='name', cls='sr-only').x()
+    h.input(tpe='input', id='name', name='name', cls='form-control', placeholder='User name')
 
-    login.label('Password', fr='password', cls='sr-only').close()
-    login.input(tpe='password', id='password', name='password', cls='form-control', placeholder='Password')
+    h.label('Password', fr='password', cls='sr-only').x()
+    h.input(tpe='password', id='password', name='password', cls='form-control', placeholder='Password')
 
-    login.label('Host', fr='host', cls='sr-only').close()
-    login.input(tpe='input', id='host', name='host', cls='form-control', value='localhost')
+    h.label('Host', fr='host', cls='sr-only').x()
+    h.input(tpe='input', id='host', name='host', cls='form-control', value='localhost')
 
-    login.label('Port', fr='port', cls='sr-only').close()
-    login.input(tpe='input', id='port', name='port', cls='form-control', value='5432')
+    h.label('Port', fr='port', cls='sr-only').x()
+    h.input(tpe='input', id='port', name='port', cls='form-control', value='5432')
 
-    login.button('Connect', args=['autofocus'], cls='btn btn-lg btn-success btn-block', tpe='submit').close()
-    login.close('form')
+    h.button('Connect', args=['autofocus'], cls='btn btn-lg btn-success btn-block', tpe='submit').x()
+    h.x('form')
 
-    login.div(cls='login')
+    h.div(cls='login')
     if 'err' in params and params['err']:
         for err in params['err']:
-            login.code(err).close()
-    login.close()
+            h.code(err).x()
+    h.x()
 
-    login.close('div')
-    login.close('body').close()
+    h.x('div')
+    h.x('body').x()
 
-    return login
+    return h
 
 
 def handle_params(params):
@@ -79,34 +79,34 @@ def handle_params(params):
 
 def Index(params=None):
     handle_params(params)
-    index = Html()
+    h = Html()
 
     # Header
-    index.add_html(Header(title='Index'))
-    index.add_html(Navigation(page='index'))
-    index.div(cls='container-fluid')
+    h.add_html(Header(title='Index'))
+    h.add_html(Navigation(page='index'))
+    h.div(cls='container-fluid')
 
     with pg_connection(*current_user.get_config()) as (c, e):
         c.execute(query('list-databases'))
         data = c.fetchall()
 
-    index.div(cls='row').div(cls='col-md-2')
-    index.div(cls='btn-group')
-    index.button('Switch database', cls='btn btn-default dropdown-toggle', data_toggle='dropdown', aria_expanded='false').close()
-    index.ul(cls='dropdown-menu', role='menu')
-    for i, d in enumerate(data):
-        index.li().a(d[0], href='index?database=%s' % d[0]).close().close()
-        if i < len(data) - 1:
-            index.li(cls='divider').close()
-    index.close()
-    index.close()
-    index.close()
+    h.div(cls='row').div(cls='col-md-2')
+    h.div(cls='btn-group')
+    h.button('Switch database', cls='btn btn-default dropdown-toggle', data_toggle='dropdown', aria_expanded='false').x()
+    h.ul(cls='dropdown-menu', role='menu')
+    for n, d in enumerate(data):
+        h.li().a(d[0], href='index?database=%s' % d[0]).x().x()
+        if n < len(data) - 1:
+            h.li(cls='divider').x()
+    h.x()
+    h.x()
+    h.x()
 
-    index.div(cls='col-md-10')
-    index.add_text('Current database: %s' % current_user.database)
-    index.close()
+    h.div(cls='col-md-10')
+    h.add_text('Current database: %s' % current_user.database)
+    h.x()
 
-    index.close()
+    h.x()
 
     # Pages
     cols = 12
@@ -114,24 +114,24 @@ def Index(params=None):
     col = 0
     for page in PAGES[1:]:
         if col == 0:
-            index.div(cls='row')
+            h.div(cls='row')
 
-        index.div(cls='col-md-%s' % col_size)
-        index.a(href='/%s' % page['name'])
-        index.div(cls='page-link')
-        index.span(cls='page-icon glyphicon glyphicon-%s' % page['icon']).close()
-        index.h3(page['caption']).close()
-        index.add_text(page['desc'])
-        index.close()
-        index.close('a')
-        index.close('div')
+        h.div(cls='col-md-%s' % col_size)
+        h.a(href='/%s' % page['name'])
+        h.div(cls='page-link')
+        h.span(cls='page-icon glyphicon glyphicon-%s' % page['icon']).x()
+        h.h3(page['caption']).x()
+        h.add_text(page['desc'])
+        h.x()
+        h.x('a')
+        h.x('div')
 
         col = (col + col_size) % cols
         if col == 0:
-            index.close()
+            h.x()
 
     # Footer
-    index.close()
-    index.add_html(Footer())
+    h.x()
+    h.add_html(Footer())
 
-    return index
+    return h

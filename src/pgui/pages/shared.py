@@ -3,80 +3,81 @@ from page import Html
 
 
 def Header(params=None, title=None, css=None, js=None):
-    header = Html()
+    h = Html()
 
-    header.add_text('<!DOCTYPE html>')
-    header.html().head()
+    h.add_text('<!DOCTYPE html>')
+    h.html().head()
     if title:
-        header.title('pgui - %s' % title).close()
+        h.title('pgui - %s' % title).x()
 
-    header.meta(charset='utf-8')
-    header.script(src='static/lib/jquery/jquery-2.1.3.js').close()
-    header.script(src='static/pgui.js').close()
-    header.link(href='static/pgui.css', rel='stylesheet')
-    header.link(href='static/lib/bootstrap/bootstrap-3.3.4-dist/css/bootstrap.css', rel='stylesheet')
-    header.link(href='static/lib/codemirror/codemirror-5.1/lib/codemirror.css', rel='stylesheet')
-    header.link(href='static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.css', rel='stylesheet')
+    h.meta(charset='utf-8')
+    h.script(src='static/lib/jquery/jquery-2.1.3.js').x()
+    h.script(src='static/pgui.js').x()
+    h.link(href='static/pgui.css', rel='stylesheet')
+    h.link(href='static/lib/bootstrap/bootstrap-3.3.4-dist/css/bootstrap.css', rel='stylesheet')
+    h.link(href='static/lib/codemirror/codemirror-5.1/lib/codemirror.css', rel='stylesheet')
+    h.link(href='static/lib/codemirror/codemirror-5.1/theme/solarized.css', rel='stylesheet')
+    h.link(href='static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.css', rel='stylesheet')
     if css:
         for c in css:
-            header.link(href=c, rel='stylesheet')
-    header.script(src='static/lib/bootstrap/bootstrap-3.3.4-dist/js/bootstrap.js').close()
-    header.script(src='static/lib/codemirror/codemirror-5.1/lib/codemirror.js').close()
-    header.script(src='static/lib/codemirror/codemirror-5.1/keymap/emacs.js').close()
-    header.script(src='static/lib/codemirror/codemirror-5.1/keymap/vim.js').close()
-    header.script(src='static/lib/codemirror/codemirror-5.1/keymap/sublime.js').close()
-    header.script(src='static/lib/codemirror/codemirror-5.1/mode/sql/sql.js').close()
-    header.script(src='static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.js').close()
+            h.link(href=c, rel='stylesheet')
+    h.script(src='static/lib/bootstrap/bootstrap-3.3.4-dist/js/bootstrap.js').x()
+    h.script(src='static/lib/codemirror/codemirror-5.1/lib/codemirror.js').x()
+    h.script(src='static/lib/codemirror/codemirror-5.1/keymap/emacs.js').x()
+    h.script(src='static/lib/codemirror/codemirror-5.1/keymap/vim.js').x()
+    h.script(src='static/lib/codemirror/codemirror-5.1/keymap/sublime.js').x()
+    h.script(src='static/lib/codemirror/codemirror-5.1/mode/sql/sql.js').x()
+    h.script(src='static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.js').x()
     if js:
         for j in js:
-            header.script(src=j).close()
+            h.script(src=j).x()
 
-    header.close('head').body()
-    return header
+    h.x('head').body()
+    return h
 
 
 def Navigation(params=None, page=None):
-    nav = Html()
+    h = Html()
 
-    nav.nav(cls='navbar navbar-default')
-    nav.div(cls='container-fluid')
-    nav.div(cls='navbar-header')
-    nav.button(tpe='button', cls='navbar-toggle collapsed',
+    h.nav(cls='navbar navbar-default')
+    h.div(cls='container-fluid')
+    h.div(cls='navbar-header')
+    h.button(tpe='button', cls='navbar-toggle collapsed',
                data_toggle='collapse', data_target='#navbar',
                aria_expanded='false', aria_controls='navbar')
-    nav.span('Toggle navigation', cls='sr-only').close()
-    nav.span(cls='icon-bar').close()
-    nav.span(cls='icon-bar').close()
-    nav.span(cls='icon-bar').close()
-    nav.close()
+    h.span('Toggle navigation', cls='sr-only').x()
+    h.span(cls='icon-bar').x()
+    h.span(cls='icon-bar').x()
+    h.span(cls='icon-bar').x()
+    h.x()
 
-    nav.a('pgui', cls='navbar-brand', href='/').close()
-    nav.close()
+    h.a('pgui', cls='navbar-brand', href='/').x()
+    h.x()
 
-    nav.div(id='navbar', cls='navbar-collapse collapse')
-    nav.ul(cls='nav navbar-nav')
+    h.div(id='navbar', cls='navbar-collapse collapse')
+    h.ul(cls='nav navbar-nav')
     for i, page in enumerate(pages.index.PAGES, 1):
         active = page['name'] == page and 'active' or ''
-        nav.li(cls=active).a(id='page-%s' % i, href='/%s' % page['name'])
-        nav.span(cls='glyphicon glyphicon-%s' % page['icon']).close()
-        nav.add_text(' %s' % page['name'].title())
-        nav.close().close()
-    nav.close()
+        h.li(cls=active).a(id='page-%s' % i, href='/%s' % page['name'])
+        h.span(cls='glyphicon glyphicon-%s' % page['icon']).x()
+        h.add_text(' %s' % page['name'].title())
+        h.x().x()
+    h.x()
 
-    nav.ul(cls='nav navbar-nav navbar-right')
-    nav.li().a(href='/logout')
-    nav.span(cls='glyphicon glyphicon-log-out').close()
-    nav.add_text(' Logout')
-    nav.close('a').close('li').close('ul')
+    h.ul(cls='nav navbar-nav navbar-right')
+    h.li().a(href='/logout')
+    h.span(cls='glyphicon glyphicon-log-out').x()
+    h.add_text(' Logout')
+    h.x('a').x('li').x('ul')
 
-    nav.close()
-    nav.close()
-    nav.close()
+    h.x()
+    h.x()
+    h.x()
 
-    return nav
+    return h
 
 
 def Footer(params=None):
-    footer = Html()
-    footer.close('body').close('html')
-    return footer
+    h = Html()
+    h.x('body').x('html')
+    return h

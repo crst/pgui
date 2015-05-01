@@ -19,16 +19,16 @@ def storage_view():
 
 def Storage(params=None):
     handle_params(params)
-    storage = Html()
+    h = Html()
 
     # Header
-    storage.add_html(Header(title='Storage',
+    h.add_html(Header(title='Storage',
                             js=['static/pages/storage.js',
                                 'static/lib/d3/d3.js',
                                 'static/lib/nvd3/nv.d3.js'],
                             css=['static/lib/nvd3/nv.d3.css']))
-    storage.add_html(Navigation(page='storage'))
-    storage.div(cls='container-fluid')
+    h.add_html(Navigation(page='storage'))
+    h.div(cls='container-fluid')
 
     with pg_connection(*current_user.get_config()) as (c, e):
         # TODO
@@ -43,11 +43,11 @@ def Storage(params=None):
         'values': values
     }]
 
-    storage.div(id='storage-chart').svg().close().close()
-    storage.script('PGUI.STORAGE.mk_relation_chart(%s);' % json.dumps(chart_data)).close()
+    h.div(id='storage-chart').svg().x().x()
+    h.script('PGUI.STORAGE.mk_relation_chart(%s);' % json.dumps(chart_data)).x()
 
     # Footer
-    storage.close()
-    storage.add_html(Footer())
+    h.x()
+    h.add_html(Footer())
 
-    return storage
+    return h

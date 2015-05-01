@@ -21,34 +21,36 @@ def query_view():
 
 def Query(params=None):
     handle_params(params)
-    query = Html()
+    h = Html()
 
     # Header
-    query.add_html(Header(title='Query',
-                          js=['static/pages/query.js',
-                              'static/pages/query_completion.js',
-                              'static/pages/keywords.js',
-                              'static/lib/springy/springy.js',
-                              'static/lib/springy/springyui.js'],
-                          css=['static/pages/query.css']))
-    query.script('PGUI.QUERY.keymap = "%s";' % current_user.keymap).close()
-    query.add_html(Navigation(page='query'))
-    query.div(cls='container-fluid')
+    h.add_html(Header(title='Query',
+                       js=['static/pages/query.js',
+                           'static/pages/query_completion.js',
+                           'static/pages/keywords.js',
+                           'static/lib/springy/springy.js',
+                           'static/lib/springy/springyui.js'],
+                       css=['static/pages/query.css']))
+    h.script('PGUI.QUERY.keymap = "%s";' % current_user.keymap).x()
+    h.add_html(Navigation(page='query'))
+    h.div(cls='container-fluid')
 
-    query.div(id='query-panel', role='tabpanel')
-    query.ul(id='query-nav-tabs', cls='nav nav-tabs', role='tablist')
-    query.a(id='add-tab', href='javascript:void(0);')
-    query.span(cls='add-tab glyphicon glyphicon-plus', aria_hidden='true').close()
-    query.close()
-    query.close()
-    query.div(id='query-tab-panes', cls='tab-content').close()
-    query.close()
+    h.div(id='query-panel', role='tabpanel')
+    h.ul(id='query-nav-tabs', cls='nav nav-tabs', role='tablist')
+    h.li(role='presentation').a(id='add-tab', href='javascript:void(0);')
+    h.span(cls='add-tab glyphicon glyphicon-plus', aria_hidden='true').x()
+    h.x('li').x('a')
+    h.x('ul')
+
+    h.div(id='query-tab-panes', cls='tab-content')
+    h.x('div')
+    h.x('div')
 
     # Footer
-    query.close()
-    query.add_html(Footer())
+    h.x('div')
+    h.add_html(Footer())
 
-    return query
+    return h
 
 
 @query_page.route('/query/run-query', methods=['POST'])

@@ -20,90 +20,90 @@ def structure_view():
 
 def Structure(params=None):
     handle_params(params)
-    structure = Html()
+    h = Html()
 
     # Header
-    structure.add_html(Header(title='Structure',
-                              js=['static/pages/structure.js'],
-                              css=['static/pages/structure.css']))
-    structure.add_html(Navigation(page='structure'))
-    structure.div(cls='container-fluid')
+    h.add_html(Header(title='Structure',
+                      js=['static/pages/structure.js'],
+                      css=['static/pages/structure.css']))
+    h.add_html(Navigation(page='structure'))
+    h.div(cls='container-fluid')
 
     schemas, schema_cols, table_data, table_cols = get_data()
 
-    structure.ul()
+    h.ul()
     for schema in schemas:
-        structure.div(cls='panel panel-default')
+        h.div(cls='panel panel-default')
 
-        structure.div(cls='panel-heading')
-        structure.div(cls='row')
-        structure.div(cls='col-md-2')
-        structure.a('%s - %s' % (schema[0], schema[1]), cls='btn btn-success btn-xs schema-btn',
-                    data_toggle='collapse', href='#%s' % schema[0], aria_expanded='false', aria_controls=schema[0])
-        structure.close()
-        structure.close('div') # col-md-2
+        h.div(cls='panel-heading')
+        h.div(cls='row')
+        h.div(cls='col-md-2')
+        h.a('%s - %s' % (schema[0], schema[1]), cls='btn btn-success btn-xs schema-btn',
+            data_toggle='collapse', href='#%s' % schema[0], aria_expanded='false', aria_controls=schema[0])
+        h.x()
+        h.x('div') # col-md-2
 
-        structure.div(cls='col-md-10')
-        structure.ul(cls='list-inline')
+        h.div(cls='col-md-10')
+        h.ul(cls='list-inline')
         for i, col in enumerate(schema_cols, 2):
-            structure.li('<strong>%s</strong> %s' % (schema[i], col)).close()
-        structure.close()
-        structure.close()
-        structure.close() # row
-        structure.close() # panel header
+            h.li('<strong>%s</strong> %s' % (schema[i], col)).x()
+        h.x()
+        h.x()
+        h.x() # row
+        h.x() # panel header
 
-        structure.div(cls='panel-body')
-        structure.div(cls='row collapse', id=schema[0])
-        structure.div(cls='col-md-2')
-        structure.div(cls='well')
+        h.div(cls='panel-body')
+        h.div(cls='row collapse', id=schema[0])
+        h.div(cls='col-md-2')
+        h.div(cls='well')
 
-        structure.b('Tables').close()
-        structure.ul()
+        h.b('Tables').x()
+        h.ul()
         for table in table_data[schema[0]]:
-            structure.li()
-            structure.a(table, href='#', onclick='PGUI.STRUCTURE.show_table_details(\'%s\', \'%s\'); return false;' % (schema[0], table)).close()
-            structure.close('li')
-        structure.close('ul')
+            h.li()
+            h.a(table, href='#', onclick='PGUI.STRUCTURE.show_table_details(\'%s\', \'%s\'); return false;' % (schema[0], table)).x()
+            h.x('li')
+        h.x('ul')
 
-        structure.close()
-        structure.close()
+        h.x()
+        h.x()
 
-        structure.div(cls='col-md-10')
+        h.div(cls='col-md-10')
         for table in table_data[schema[0]]:
-            structure.div(id='table-details-%s-%s' % (schema[0], table), cls='table-details table-details-%s' % schema[0])
+            h.div(id='table-details-%s-%s' % (schema[0], table), cls='table-details table-details-%s' % schema[0])
             data = table_data[schema[0]][table]
-            structure.p('Table size: ').b(data['table-size']).close().close()
-            structure.table(cls='table table-condensed')
-            structure.tr()
+            h.p('Table size: ').b(data['table-size']).x().x()
+            h.table(cls='table table-condensed')
+            h.tr()
             for tc in table_cols:
-                structure.th(tc).close()
-            structure.th(id='col-size-header-%s-%s' % (schema[0], table))
-            structure.a('Get column sizes',
-                        href='#',
-                        onclick='PGUI.STRUCTURE.get_col_size(\'%s\', \'%s\'); return false;' % (schema[0], table)).close()
-            structure.close()
-            structure.close('tr')
+                h.th(tc).x()
+            h.th(id='col-size-header-%s-%s' % (schema[0], table))
+            h.a('Get column sizes',
+                href='#',
+                onclick='PGUI.STRUCTURE.get_col_size(\'%s\', \'%s\'); return false;' % (schema[0], table)).x()
+            h.x()
+            h.x('tr')
             for row in zip(*data['column-data'].values()):
-                structure.tr()
+                h.tr()
                 for col in row:
-                    structure.td(col).close()
-                structure.td(id='col-size-%s-%s-%s' % (schema[0], table, row[0])).close()
-                structure.close('tr')
-            structure.close('table')
-            structure.close('div')
-        structure.close()
+                    h.td(col).x()
+                h.td(id='col-size-%s-%s-%s' % (schema[0], table, row[0])).x()
+                h.x('tr')
+            h.x('table')
+            h.x('div')
+        h.x()
 
-        structure.close()
-        structure.close() # panel body
+        h.x()
+        h.x() # panel body
 
-        structure.close() # panel
-    structure.close()
+        h.x() # panel
+    h.x()
 
     # Footer
-    structure.close()
-    structure.add_html(Footer())
+    h.x()
+    h.add_html(Footer())
 
-    return structure
+    return h
 
 
 def get_data():

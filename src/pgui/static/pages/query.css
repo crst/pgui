@@ -1,10 +1,23 @@
 
-.add-tab {
-    padding: 1em;
+.remove-editor-tab {
+    margin-left: 0.5em;
+    color: #333333;
+    opacity: 0.5;
 }
 
-.query-editor {
-    border: 1px solid black;
+.remove-editor-tab:hover {
+    opacity: 1;
+    cursor: pointer;
+}
+
+.run-query,
+.run-explain {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.run-explain {
+    margin-left: 0.5em;
 }
 
 .query-stats {

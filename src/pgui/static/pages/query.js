@@ -11,11 +11,11 @@ $(document).ready(function () {
 
 PGUI.QUERY.bind_events = function () {
     $('.run-query').unbind().click(function () {
-        var eid = $(this).attr('data-id');
+        var eid = $(this).attr('data-eid');
         PGUI.QUERY.run_query(eid);
     });
     $('.run-explain').unbind().click(function () {
-        var eid = $(this).attr('data-id');
+        var eid = $(this).attr('data-eid');
         PGUI.QUERY.run_explain(eid);
     });
 
@@ -23,14 +23,20 @@ PGUI.QUERY.bind_events = function () {
         PGUI.QUERY.eid += 1;
         PGUI.QUERY.make_query_tab(PGUI.QUERY.eid);
     });
+
+    $('.remove-editor-tab').click(function () {
+        var eid = $(this).attr('data-eid');
+        PGUI.QUERY.remove_query_tab(eid);
+    });
 };
 
 
 PGUI.QUERY.make_query_tab = function (eid) {
     var active = (eid === 1) ? 'active' : '';
     var nav_content = [
-        '<li role="presentation" class="', active, '">',
-        '<a href="#query-editor-tab-', eid, '" aria-controls="query-editor-tab-', eid, '" role="tab" data-toggle="tab">Editor ', eid, '</a>',
+        '<li id="query-editor-nav-', eid, '" role="presentation" class="', active, '">',
+        '<a href="#query-editor-tab-', eid, '" aria-controls="query-editor-tab-', eid, '" role="tab" data-toggle="tab">Query ', eid,
+        '<span id="remove-editor-tab-', eid, '" class="remove-editor-tab glyphicon glyphicon-remove" data-eid=', eid, ' aria-hidden="true"></span></a>',
         '</li>',
     ];
 
@@ -47,8 +53,8 @@ PGUI.QUERY.make_query_tab = function (eid) {
         // Actions
         '<div class="row">',
         '<div class="col-md-2">',
-        '<a data-id="', eid, '" class="run-query btn btn-success" href="javascript:void(0);" role="button">Run</a>',
-        '<a data-id="', eid, '"class="run-explain btn btn-default" href="javascript:void(0);" role="button">Explain</a>',
+        '<a data-eid="', eid, '" class="run-query btn btn-success" href="javascript:void(0);" role="button">Run</a>',
+        '<a data-eid="', eid, '"class="run-explain btn btn-default" href="javascript:void(0);" role="button">Explain</a>',
         '</div>',
         '<div class="col-md-8"></div>',
         '<div class="col-md-2"><div id="query-stats-', eid, '" class="query-stats"></div></div>',
@@ -92,13 +98,25 @@ PGUI.QUERY.make_query_tab = function (eid) {
     $('#query-nav-tabs').append(nav_content.join(''));
     $('#query-tab-panes').append(tab_content.join(''));
 
-    PGUI.QUERY.EDITORS[eid] = CodeMirror.fromTextArea($('#query-editor-' + eid).get(0),
+    PGUI.QUERY.EDITORS[eid] = CodeMirror.fromTextArea(document.getElementById('query-editor-' + eid),
                                                       {'mode': 'text/x-sql',
                                                        'keyMap': PGUI.QUERY.keymap,
                                                        'extraKeys': {'Alt-/': 'autocomplete',
                                                                      'Ctrl-Enter': function () { PGUI.QUERY.run_query(eid); },
                                                                      'Alt-Enter': function () { PGUI.QUERY.run_explain(eid); }},
-                                                       'lineNumbers': true});
+                                                       //'lineNumbers': true,
+                                                       'theme': 'solarized light',
+                                                       'autofocus': true});
+    PGUI.QUERY.bind_events();
+    $('a[href="#query-editor-tab-' + eid + '"]').tab('show');
+};
+
+
+PGUI.QUERY.remove_query_tab = function (eid) {
+    $('li[id="query-editor-nav-' + eid + '"]').prev('li').find('a').tab('show');
+    delete PGUI.QUERY.EDITORS[eid];
+    $('#query-editor-nav-' + eid).remove();
+    $('#query-editor-tab-' + eid).remove();
 };
 
 
@@ -108,6 +126,7 @@ PGUI.QUERY.run_query = function (eid) {
     if (!query) {
         query = editor.getValue();
     }
+    $('#query-stats-' + eid).html('<span class="glyphicon glyphicon-refresh loading-spinner" aria-hidden="true"></span>');
     $.ajax({
         'method': 'POST',
         'url': 'query/run-query',
