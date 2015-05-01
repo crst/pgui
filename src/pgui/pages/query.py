@@ -35,56 +35,14 @@ def Query(params=None):
     query.add_html(Navigation(page='query'))
     query.div(cls='container-fluid')
 
-    # Editor
-    query.div(cls='row').div(cls='col-md-12')
-    query.textarea(id='query-editor', name='query-editor', cols='80', rows='20').close()
-    query.close().close()
-
-    # Actions
-    query.div(cls='row')
-    query.div(cls='col-md-2')
-    query.a('Run', id='run-query', cls='btn btn-success', href='javascript: void(0);', role='button').close()
-    query.a('Explain', id='run-explain', cls='btn btn-default', href='javascript: void(0);', role='button').close()
+    query.div(id='query-panel', role='tabpanel')
+    query.ul(id='query-nav-tabs', cls='nav nav-tabs', role='tablist')
+    query.a(id='add-tab', href='javascript:void(0);')
+    query.span(cls='add-tab glyphicon glyphicon-plus', aria_hidden='true').close()
     query.close()
-
-    query.div(cls='col-md-8').close()
-
-    query.div(cls='col-md-2').div(id='query-stats').close().close()
     query.close()
-
-    # Results
-    query.div(cls='row').div(cls='col-md-12')
-
-    query.div(role='tabpanel', data_example_id='togglable-tabs')
-
-    query.ul(cls='nav nav-tabs', role='tablist')
-    query.li(role='presentation', cls='active')
-    query.a('Result', href='#result', id='result-tab', role='tab', data_toggle='tab',
-            aria_controls='result', aria_expanded='true').close()
+    query.div(id='query-tab-panes', cls='tab-content').close()
     query.close()
-
-    query.li(role='presentation')
-    query.a('CSV', href='#csv', id='csv-tab', role='tab', data_toggle='tab',
-            aria_controls='csv', aria_expanded='true').close()
-    query.close()
-
-    query.li(role='presentation')
-    query.a('Explain', href='#explain', id='explain-tab', role='tab', data_toggle='tab',
-            aria_controls='explain', aria_expanded='true').close()
-    query.close().close()
-
-    query.div(cls='tab-content')
-    query.div(role='tabpanel', cls='tab-pane fade in active', id='result', aria_labelledBy='result-tab')
-    query.div(id='query-result').close().close()
-
-    query.div(role='tabpanel', cls='tab-pane fade', id='csv', aria_labelledBy='csv-tab')
-    query.textarea(id='csv-result', rows=10).close().close()
-
-    query.div(role='tabpanel', cls='tab-pane fade', id='explain', aria_labelledBy='explain-tab')
-    query.canvas(id='explain-result', width=800, height=200).close()
-    query.close()
-
-    query.close().close()
 
     # Footer
     query.close()
