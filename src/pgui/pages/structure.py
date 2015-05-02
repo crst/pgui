@@ -116,7 +116,7 @@ def get_data():
 
     schema_cols = ['', 'tables', 'views', 'foreign tables', 'temporary tables', 'functions', 'sequences']
     table_cols = ['Column name', 'Column type', 'Column default', 'Column is nullable']
-    table_data = {}
+    table_data = {'public': OrderedDict()}
     for table in tables:
         if table[0] not in table_data:
             table_data[table[0]] = OrderedDict()

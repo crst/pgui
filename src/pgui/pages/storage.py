@@ -23,28 +23,52 @@ def Storage(params=None):
 
     # Header
     h.add_html(Header(title='Storage',
-                            js=['static/pages/storage.js',
-                                'static/lib/d3/d3.js',
-                                'static/lib/nvd3/nv.d3.js'],
-                            css=['static/lib/nvd3/nv.d3.css']))
+                      js=['static/pages/storage.js',
+                          'static/lib/d3/d3.js',
+                          'static/lib/nvd3/nv.d3.js'],
+                      css=['static/pages/storage.css',
+                           'static/lib/nvd3/nv.d3.css']))
     h.add_html(Navigation(page='storage'))
     h.div(cls='container-fluid')
+
+    h.div(cls='row').div(cls='col-md-10').x()
+    h.div(cls='col-md-2')
+    h.form(id='mode-form', cls='form-inline')
+    h.label(cls='radio-inline')
+    h.input(tpe='radio', name='mode', value='size', args=['checked']).add_text('Size')
+    h.x()
+    h.label(cls='radio-inline')
+    h.input(tpe='radio', name='mode', value='rows').add_text('Rows (est.)')
+    h.x().x()
+    h.x('div').x('div')
 
     with pg_connection(*current_user.get_config()) as (c, e):
         # TODO
         c.execute(query('list-storage'))
         data = c.fetchall()
 
+    treemap_data = {'name': 'root', 'children': []}
     values = []
-    for (table_name, rel_size) in data:
-        values.append({'label': table_name, 'value': int(rel_size)})
+    for (schema_name, table_name, t_size, t_tuples) in data:
+        treemap_data['children'].append({'schema_name': schema_name, 'name': table_name,
+                                         'size': int(t_size), 'rows': int(t_tuples)})
+        values.append({'label': table_name, 'value': int(t_size)})
     chart_data = [{
         'key': 'Relation size',
-        'values': values
+        'values': values[:10]
     }]
 
+    h.div(cls='col-md-12')
+    h.div(id='treemap-chart').div().x().x()
+    h.script('PGUI.STORAGE.mk_treemap_chart(%s);' % json.dumps(treemap_data)).x()
+    h.x()
+
+    h.div(cls='col-md-12').b('Top 10 relations').x()
     h.div(id='storage-chart').svg().x().x()
     h.script('PGUI.STORAGE.mk_relation_chart(%s);' % json.dumps(chart_data)).x()
+    h.x()
+
+    h.x('div') # row
 
     # Footer
     h.x()
