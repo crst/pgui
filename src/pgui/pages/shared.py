@@ -1,3 +1,5 @@
+from flask.ext.login import current_user as cu
+
 import pages.index
 from page import Html
 
@@ -33,6 +35,8 @@ def Header(params=None, title=None, css=None, js=None):
             h.script(src=j).x()
 
     h.x('head').body()
+    config = 'PGUI.user = "%s"; PGUI.db = "%s"; PGUI.host = "%s";' % (cu.name, cu.database, cu.host)
+    h.script().add_text(config).x()
     return h
 
 

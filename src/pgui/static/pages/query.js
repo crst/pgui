@@ -4,8 +4,9 @@ PGUI.QUERY.EDITORS = {};
 PGUI.QUERY.eid = 1;
 
 $(document).ready(function () {
-    if ('queries' in localStorage && !$.isEmptyObject(JSON.parse(localStorage.queries))) {
-        var q = JSON.parse(localStorage.queries);
+    PGUI.QUERY.config_key = PGUI.user + '-' + PGUI.host + '-' + PGUI.db + '-queries';
+    if (PGUI.QUERY.config_key in localStorage && !$.isEmptyObject(JSON.parse(localStorage[PGUI.QUERY.config_key]))) {
+        var q = JSON.parse(localStorage[PGUI.QUERY.config_key]);
         for (var k in q) {
             PGUI.QUERY.make_query_tab(k, q[k]);
             PGUI.QUERY.eid = Math.max(PGUI.QUERY.eid, k);
@@ -56,7 +57,7 @@ PGUI.QUERY.bind_events = function () {
         for (var k in PGUI.QUERY.EDITORS) {
             storage[k] = PGUI.QUERY.EDITORS[k].getValue();
         }
-        localStorage.queries = JSON.stringify(storage);
+        localStorage[PGUI.QUERY.config_key] = JSON.stringify(storage);
     });
 };
 
