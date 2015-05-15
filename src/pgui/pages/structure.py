@@ -7,7 +7,7 @@ from flask.ext.login import current_user, login_required
 from page import Html
 from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
-from pg import pg_connection, query
+from pg import pg_connection, pg_err_log, query
 
 
 structure_page = Blueprint('structure', __name__)
@@ -107,12 +107,14 @@ def Structure(params=None):
 
 
 def get_data():
-    with pg_connection(*current_user.get_config()) as (c, e):
-        c.execute(query('list-schemas'))
-        schemas = c.fetchall()
+    schemas, tables = [], []
+    with pg_connection(*current_user.get_config()) as (con, cur, err):
+        with pg_err_log('list schemas and tables'):
+            cur.execute(query('list-schemas'))
+            schemas = cur.fetchall()
 
-        c.execute(query('list-tables'))
-        tables = c.fetchall()
+            cur.execute(query('list-tables'))
+            tables = cur.fetchall()
 
     schema_cols = ['', 'tables', 'views', 'foreign tables', 'temporary tables', 'functions', 'sequences']
     table_cols = ['Column name', 'Column type', 'Column default', 'Column is nullable']
@@ -143,9 +145,11 @@ def get_col_size():
         params = {'table-schema': escape(request.args['table-schema']),
                   'table-name': escape(request.args['table-name'])}
 
-        with pg_connection(*current_user.get_config()) as (c, e):
-            c.execute(query('get-column-size'), params)
-            data = c.fetchall()
+        data = []
+        with pg_connection(*current_user.get_config()) as (con, cur, err):
+            with pg_err_log('fetching column size for %s' % params):
+                cur.execute(query('get-column-size'), params)
+                data = cur.fetchall()
 
         return json.dumps(data)
 

@@ -1,4 +1,6 @@
 from importlib import import_module
+import logging
+import logging.handlers
 
 from flask import Flask, request, redirect, url_for, escape, get_flashed_messages
 from flask.ext.login import LoginManager, login_user, logout_user, login_required
@@ -78,4 +80,9 @@ for page in pages.index.PAGES:
 # Run app
 
 if __name__ == '__main__':
+    logging.basicConfig(filename='pgui.log',
+                        level=logging.WARNING,
+                        format='%(asctime)s %(message)s'
+    )
+
     app.run(debug=config.DEBUG)

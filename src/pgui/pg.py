@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+import logging
 import os
 from pkg_resources import resource_string
 
@@ -19,13 +20,21 @@ def pg_connection(user, password=None, db='postgres', host='localhost', port=543
                                port=port)
         cur = con.cursor()
     except psycopg2.Error as err:
-        yield None, err
+        yield None, None, err
     else:
         try:
-            yield cur, None
+            yield con, cur, None
         finally:
             cur.close()
             con.close()
+
+
+@contextmanager
+def pg_err_log(log_msg=''):
+    try:
+        yield
+    except psycopg2.Error as err:
+        logging.error('%s: %s', log_msg, err)
 
 
 def query(name):

@@ -4,7 +4,7 @@ import time
 from page import Html
 from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
-from pg import pg_connection, query
+from pg import pg_connection
 
 from flask import Blueprint, request
 from flask.ext.login import current_user, login_required
@@ -56,16 +56,16 @@ def Query(params=None):
 @query_page.route('/query/run-query', methods=['POST'])
 @login_required
 def run_query():
-    with pg_connection(*current_user.get_config()) as (c, e):
-        if e:
+    with pg_connection(*current_user.get_config()) as (con, cur, err):
+        if err:
             return json.dumps({'success': False,
-                               'error-msg': str(e)})
+                               'error-msg': str(err)})
         try:
             t1 = time.time()
-            c.execute(request.form['query'])
-            columns = [desc[0] for desc in c.description]
+            cur.execute(request.form['query'])
+            columns = [desc[0] for desc in cur.description]
             t2 = time.time()
-            data = c.fetchall()
+            data = cur.fetchall()
             t3 = time.time()
         except psycopg2.Warning as warn:
             # TODO
@@ -85,14 +85,14 @@ def run_query():
 @query_page.route('/query/run-explain', methods=['POST'])
 @login_required
 def run_explain():
-    with pg_connection(*current_user.get_config()) as (c, e):
-        if e:
+    with pg_connection(*current_user.get_config()) as (con, cur, err):
+        if err:
             return json.dumps({'success': False,
-                               'error-msg': str(e)})
+                               'error-msg': str(err)})
         try:
             query = 'EXPLAIN (format json) %s' % request.form['query']
-            c.execute(query)
-            data = c.fetchall()
+            cur.execute(query)
+            data = cur.fetchall()
             plan = json.loads(data[0][0])
         except psycopg2.Warning as warn:
             # TODO

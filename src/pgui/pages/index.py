@@ -3,7 +3,7 @@ from flask.ext.login import current_user
 
 from page import Html
 from pages.shared import Header, Navigation, Footer
-from pg import pg_connection, query
+from pg import pg_connection, pg_err_log, query
 
 
 PAGES = [
@@ -86,9 +86,12 @@ def Index(params=None):
     h.add_html(Navigation(page='index'))
     h.div(cls='container-fluid')
 
-    with pg_connection(*current_user.get_config()) as (c, e):
-        c.execute(query('list-databases'))
-        data = c.fetchall()
+    data, server_version = [], ''
+    with pg_connection(*current_user.get_config()) as (con, cur, err):
+        server_version = con.server_version
+        with pg_err_log('list databases'):
+            cur.execute(query('list-databases'))
+            data = cur.fetchall()
 
     h.div(cls='row').div(cls='col-md-2')
     h.div(cls='btn-group')
@@ -98,15 +101,18 @@ def Index(params=None):
         h.li().a(d[0], href='index?database=%s' % d[0]).x().x()
         if n < len(data) - 1:
             h.li(cls='divider').x()
-    h.x()
-    h.x()
-    h.x()
+    h.x().x().x()
 
-    h.div(cls='col-md-10')
+    h.div(cls='col-md-8')
     h.add_text('Current database: %s' % current_user.database)
     h.x()
 
+    h.div(cls='col-md-2')
+    h.add_text('Server version: %s' % server_version)
     h.x()
+
+    h.x().hr()
+
 
     # Pages
     cols = 12

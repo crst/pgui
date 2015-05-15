@@ -11,7 +11,7 @@ class Html(object):
             'canvas', 'code',
             'div',
             'form',
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr',
             'input',
             'label', 'li',
             'nav',
@@ -20,7 +20,7 @@ class Html(object):
             'table', 'td', 'th', 'tr', 'textarea',
             'ul',
         )
-        self.ctags = set(('input', 'meta', 'link'))
+        self.ctags = set(('hr', 'input', 'meta', 'link'))
         self.tokens = {
             'cls': 'class',
             'fr' : 'for',

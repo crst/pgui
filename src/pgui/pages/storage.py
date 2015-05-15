@@ -6,7 +6,7 @@ from flask.ext.login import current_user, login_required
 from page import Html
 from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
-from pg import pg_connection, query
+from pg import pg_connection, pg_err_log, query
 
 
 storage_page = Blueprint('storage', __name__)
@@ -42,10 +42,11 @@ def Storage(params=None):
     h.x().x()
     h.x('div').x('div')
 
-    with pg_connection(*current_user.get_config()) as (c, e):
-        # TODO
-        c.execute(query('list-storage'))
-        data = c.fetchall()
+    data = []
+    with pg_connection(*current_user.get_config()) as (con, cur, err):
+        with pg_err_log('list storage query'):
+            cur.execute(query('list-storage'))
+            data = cur.fetchall()
 
     treemap_data = {'name': 'root', 'children': []}
     values = []
