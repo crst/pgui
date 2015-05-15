@@ -7,7 +7,7 @@ from flask.ext.login import current_user, login_required
 from page import Html
 from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
-from pg import pg_connection, pg_err_log, query
+from pg import pg_connection, pg_log_err, query
 
 
 structure_page = Blueprint('structure', __name__)
@@ -109,7 +109,7 @@ def Structure(params=None):
 def get_data():
     schemas, tables = [], []
     with pg_connection(*current_user.get_config()) as (con, cur, err):
-        with pg_err_log('list schemas and tables'):
+        with pg_log_err('list schemas and tables'):
             cur.execute(query('list-schemas'))
             schemas = cur.fetchall()
 
@@ -147,7 +147,7 @@ def get_col_size():
 
         data = []
         with pg_connection(*current_user.get_config()) as (con, cur, err):
-            with pg_err_log('fetching column size for %s' % params):
+            with pg_log_err('fetching column size for %s' % params):
                 cur.execute(query('get-column-size'), params)
                 data = cur.fetchall()
 

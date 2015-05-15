@@ -1,9 +1,11 @@
+from collections import defaultdict
+
 from flask import escape
 from flask.ext.login import current_user
 
 from page import Html
 from pages.shared import Header, Navigation, Footer
-from pg import pg_connection, pg_err_log, query
+from pg import pg_connection, pg_log_err, query
 
 
 PAGES = [
@@ -86,16 +88,18 @@ def Index(params=None):
     h.add_html(Navigation(page='index'))
     h.div(cls='container-fluid')
 
-    data, server_version = [], ''
+    data, params = [], defaultdict(str)
+    param_keys = ('server_version', 'server_encoding', 'client_encoding', 'is_superuser', 'TimeZone')
     with pg_connection(*current_user.get_config()) as (con, cur, err):
-        server_version = con.server_version
-        with pg_err_log('list databases'):
+        for k in param_keys:
+            params[k] = con.get_parameter_status(k)
+        with pg_log_err('list databases'):
             cur.execute(query('list-databases'))
             data = cur.fetchall()
 
     h.div(cls='row').div(cls='col-md-2')
     h.div(cls='btn-group')
-    h.button('Switch database', cls='btn btn-default dropdown-toggle', data_toggle='dropdown', aria_expanded='false').x()
+    h.button('Switch database <span class="caret"></span>', cls='btn btn-default dropdown-toggle', data_toggle='dropdown', aria_expanded='false').x()
     h.ul(cls='dropdown-menu', role='menu')
     for n, d in enumerate(data):
         h.li().a(d[0], href='index?database=%s' % d[0]).x().x()
@@ -103,12 +107,16 @@ def Index(params=None):
             h.li(cls='divider').x()
     h.x().x().x()
 
-    h.div(cls='col-md-8')
-    h.add_text('Current database: %s' % current_user.database)
+    h.div(cls='col-md-4 small')
+    h.add_text('<strong>%s</strong>' % current_user.database)
+    h.add_text('<br>%s@%s:%s' % (current_user.name, current_user.host, current_user.port))
     h.x()
 
-    h.div(cls='col-md-2')
-    h.add_text('Server version: %s' % server_version)
+    h.div(cls='col-md-6 small')
+    h.ul(cls='list-inline')
+    for k, v in params.items():
+        h.li('%s: %s' % (k, v)).x()
+    h.x('ul')
     h.x()
 
     h.x().hr()

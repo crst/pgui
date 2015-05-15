@@ -6,7 +6,7 @@ from flask.ext.login import current_user, login_required
 from page import Html
 from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
-from pg import pg_connection, pg_err_log, query
+from pg import pg_connection, pg_log_err, query
 
 
 storage_page = Blueprint('storage', __name__)
@@ -44,7 +44,7 @@ def Storage(params=None):
 
     data = []
     with pg_connection(*current_user.get_config()) as (con, cur, err):
-        with pg_err_log('list storage query'):
+        with pg_log_err('list storage query'):
             cur.execute(query('list-storage'))
             data = cur.fetchall()
 

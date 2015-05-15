@@ -85,10 +85,10 @@ PGUI.QUERY.make_query_tab = function (eid, query) {
         '<div class="row">',
         '<div class="col-md-2">',
         '<a data-eid="', eid, '" class="run-query btn btn-success" href="javascript:void(0);" role="button">Run</a>',
-        '<a data-eid="', eid, '"class="run-explain btn btn-default" href="javascript:void(0);" role="button">Explain</a>',
+        '<a data-eid="', eid, '" class="run-explain btn btn-default" href="javascript:void(0);" role="button">Explain</a>',
         '</div>',
-        '<div class="col-md-8"></div>',
-        '<div class="col-md-2"><div id="query-stats-', eid, '" class="query-stats"></div></div>',
+        '<div class="col-md-6"></div>',
+        '<div class="col-md-4"><div id="query-stats-', eid, '" class="query-stats small"></div></div>',
         '</div>',
 
         // Results
@@ -136,7 +136,8 @@ PGUI.QUERY.make_query_tab = function (eid, query) {
                                                                      'Ctrl-Enter': function () { PGUI.QUERY.run_query(eid); },
                                                                      'Alt-Enter': function () { PGUI.QUERY.run_explain(eid); }},
                                                        'lineNumbers': true,
-                                                       'theme': 'solarized light',
+                                                       'cursorBlinkRate': 0,
+                                                       'theme': 'neo',
                                                        'autofocus': true});
     PGUI.QUERY.EDITORS[eid].setValue(query);
     PGUI.QUERY.refresh_editor(eid);
@@ -189,6 +190,7 @@ PGUI.QUERY.display_query_result = function (eid, result) {
 
     var t0 = Date.now();
     var tbl = [], csv = [], i, j;
+    var stats = '<ul class="list-inline">';
     if (result.success) {
         var d = result.data;
 
@@ -213,10 +215,9 @@ PGUI.QUERY.display_query_result = function (eid, result) {
         tbl.push('</table>');
         csv.push('\n');
 
-        var stats = '<p><h6>Result: ' + d.length + ' rows</h6></p>';
-        stats += '<p><h6>Query execution: ' + result['execution-time'].toFixed(2) + ' seconds</h6></p>';
-        stats += '<p><h6>Fetching results: ' + result['fetching-time'].toFixed(2) + ' seconds</h6></p>';
-        $('#query-stats').html(stats);
+        stats += '<li><strong>' + d.length + ' rows</strong></li>';
+        stats += '<li><strong>' + result['execution-time'].toFixed(1) + 's</strong> query</li>';
+        stats += '<li><strong>' + result['fetching-time'].toFixed(1) + 's</strong> fetching</li>';
     } else {
         tbl = ['\
 <div class="alert alert-danger" role="alert">\
@@ -229,7 +230,8 @@ PGUI.QUERY.display_query_result = function (eid, result) {
     $('#query-result-' + eid).html(tbl.join(''));
     $('#csv-result-' + eid).val(csv.join(''));
     var t1 = Date.now();
-    $('#query-stats-' + eid).append('<p><h6>Result rendering: ' + ((t1 - t0) / 1000).toFixed(2) + ' seconds</h6></p>');
+    stats += '<li><strong>' + ((t1 - t0) / 1000).toFixed(1) + 's</strong> rendering</li></ul>';
+    $('#query-stats-' + eid).html(stats);
 };
 
 

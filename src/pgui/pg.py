@@ -30,7 +30,7 @@ def pg_connection(user, password=None, db='postgres', host='localhost', port=543
 
 
 @contextmanager
-def pg_err_log(log_msg=''):
+def pg_log_err(log_msg=''):
     try:
         yield
     except psycopg2.Error as err:

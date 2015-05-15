@@ -10,7 +10,7 @@ def Header(params=None, title=None, css=None, js=None):
     h.add_text('<!DOCTYPE html>')
     h.html().head()
     if title:
-        h.title('pgui - %s' % title).x()
+        h.title('pgui - %s/%s' % (cu.database, title)).x()
 
     h.meta(charset='utf-8')
     h.script(src='static/lib/jquery/jquery-2.1.3.js').x()
@@ -18,7 +18,7 @@ def Header(params=None, title=None, css=None, js=None):
     h.link(href='static/pgui.css', rel='stylesheet')
     h.link(href='static/lib/bootstrap/bootstrap-3.3.4-dist/css/bootstrap.css', rel='stylesheet')
     h.link(href='static/lib/codemirror/codemirror-5.1/lib/codemirror.css', rel='stylesheet')
-    h.link(href='static/lib/codemirror/codemirror-5.1/theme/solarized.css', rel='stylesheet')
+    h.link(href='static/lib/codemirror/codemirror-5.1/theme/neo.css', rel='stylesheet')
     h.link(href='static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.css', rel='stylesheet')
     if css:
         for c in css:
