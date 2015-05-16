@@ -31,6 +31,10 @@ PGUI.STORAGE.mk_treemap_chart = function (data) {
         .style('background', function(d) { return color(d.schema_name); })
         .text(function (d) { return d.name; });
 
+    $('#schema-form input').change(function () {
+        $('#schema-form').submit();
+    });
+
     $('#mode-form input').change(function () {
         var v = $(this).val();
         var mode_func = function (d) { return d[v]; };
@@ -38,24 +42,5 @@ PGUI.STORAGE.mk_treemap_chart = function (data) {
             .transition()
             .duration(500)
             .call(calculate_position);
-    });
-};
-
-
-PGUI.STORAGE.mk_relation_chart = function (data) {
-    nv.addGraph(function() {
-        var chart = nv.models.discreteBarChart()
-            .x(function(d) { return d.label; })
-            .y(function(d) { return d.value; })
-            .staggerLabels(true)
-            .tooltips(true)
-            .showValues(true);
-
-        d3.select('#storage-chart svg')
-            .datum(data)
-            .call(chart);
-
-        nv.utils.windowResize(chart.update);
-        return chart;
     });
 };
