@@ -1,4 +1,8 @@
 
+.form-row {
+    margin-bottom: 1em;
+}
+
 #mode-form {
     text-align: right;
 }
@@ -6,7 +10,7 @@
 #treemap-chart {
     position: relative;
     width: 100%;
-    height: 600px;
+    border: 1px solid #c0c0c0;
 }
 
 .node {

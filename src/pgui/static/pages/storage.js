@@ -1,10 +1,11 @@
 
 PGUI.STORAGE = {};
 
-
 PGUI.STORAGE.mk_treemap_chart = function (data) {
+    $('#treemap-chart').html('<div></div>');
     var width = $('#treemap-chart').width();
-    var height = $('#treemap-chart').height();
+    var height = $(window).height() - $('#treemap-chart').offset().top - 10;
+    $('#treemap-chart').height(height);
 
     var calculate_position = function () {
         this.style('left', function (d) { return d.x + 'px'; })
@@ -14,6 +15,8 @@ PGUI.STORAGE.mk_treemap_chart = function (data) {
     };
 
     var color = d3.scale.category20c();
+    var color = d3.scale.ordinal()
+        .range(colorbrewer.Set3[12]);
 
     var treemap = d3.layout.treemap()
         .value(function(d) { return d.size; })
@@ -42,5 +45,9 @@ PGUI.STORAGE.mk_treemap_chart = function (data) {
             .transition()
             .duration(500)
             .call(calculate_position);
+    });
+
+    $(window).resize(function () {
+        PGUI.STORAGE.mk_treemap_chart(data);
     });
 };

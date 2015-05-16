@@ -27,7 +27,6 @@ def Storage(params=None):
             data = cur.fetchall()
 
     display_schemas = params.getlist('schema')
-    print(display_schemas)
     schemas = set()
     treemap_data = {'name': 'root', 'children': []}
     for (schema_name, table_name, t_size, t_tuples) in data:
@@ -41,12 +40,13 @@ def Storage(params=None):
     # Header
     h.add_html(Header(title='Storage',
                       js=['static/pages/storage.js',
-                          'static/lib/d3/d3.js'],
+                          'static/lib/d3/d3.js',
+                          'static/lib/d3/lib/colorbrewer/colorbrewer.js'],
                       css=['static/pages/storage.css']))
     h.add_html(Navigation(page='storage'))
     h.div(cls='container-fluid')
 
-    h.div(cls='row').div(cls='col-md-10')
+    h.div(cls='row form-row').div(cls='col-md-10')
     h.form(id='schema-form', cls='form-inline')
     for schema in schemas:
         h.label(cls='checkbox-inline')
@@ -66,7 +66,7 @@ def Storage(params=None):
     h.x('div').x('div')
 
     h.div(cls='row').div(cls='col-md-12')
-    h.div(id='treemap-chart').div().x().x()
+    h.div(id='treemap-chart').x()
     h.script('PGUI.STORAGE.mk_treemap_chart(%s);' % json.dumps(treemap_data)).x()
     h.x()
     h.x('div') # row
