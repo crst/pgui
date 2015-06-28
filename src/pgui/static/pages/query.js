@@ -2,11 +2,13 @@
 PGUI.QUERY = {};
 PGUI.QUERY.EDITORS = {};
 PGUI.QUERY.eid = 1;
+PGUI.QUERY.config_key = PGUI.user + '-' + PGUI.host + '-' + PGUI.db;
+
 
 $(document).ready(function () {
-    PGUI.QUERY.config_key = PGUI.user + '-' + PGUI.host + '-' + PGUI.db + '-queries';
-    if (PGUI.QUERY.config_key in localStorage && !$.isEmptyObject(JSON.parse(localStorage[PGUI.QUERY.config_key]))) {
-        var q = JSON.parse(localStorage[PGUI.QUERY.config_key]);
+    var queries_key = PGUI.QUERY.config_key + '-queries';
+    if (PGUI.QUERY.config_key in localStorage && !$.isEmptyObject(JSON.parse(localStorage[queries_key]))) {
+        var q = JSON.parse(localStorage[queries_key]);
         for (var k in q) {
             PGUI.QUERY.make_query_tab(k, q[k]);
             PGUI.QUERY.eid = Math.max(PGUI.QUERY.eid, k);
@@ -35,6 +37,10 @@ PGUI.QUERY.bind_events = function () {
         PGUI.QUERY.run_explain(eid);
     });
 
+    $('#show-query-history').unbind().click(function () {
+        PGUI.QUERY.show_query_history();
+    });
+
     $('#add-tab').unbind().click(function () {
         PGUI.QUERY.eid += 1;
         PGUI.QUERY.make_query_tab(PGUI.QUERY.eid, '');
@@ -57,7 +63,7 @@ PGUI.QUERY.bind_events = function () {
         for (var k in PGUI.QUERY.EDITORS) {
             storage[k] = PGUI.QUERY.EDITORS[k].getValue();
         }
-        localStorage[PGUI.QUERY.config_key] = JSON.stringify(storage);
+        localStorage[PGUI.QUERY.config_key + '-queries'] = JSON.stringify(storage);
     });
 };
 
@@ -154,12 +160,88 @@ PGUI.QUERY.remove_query_tab = function (eid) {
 };
 
 
-PGUI.QUERY.run_query = function (eid) {
-    var editor = PGUI.QUERY.EDITORS[eid];
-    var query = editor.getSelection();
-    if (!query) {
-        query = editor.getValue();
+PGUI.QUERY.store_query = function (query) {
+    // TODO: build abstraction for keys
+    var key = PGUI.QUERY.config_key + '-stored-queries';
+    if (!(key in localStorage) || $.isEmptyObject(JSON.parse(localStorage[key]))) {
+        localStorage[key] = JSON.stringify({'entry': undefined});
     }
+    var stored_queries = JSON.parse(localStorage[key]);
+
+    var h = PGUI.hash(query);
+    if(!stored_queries['entry']) {
+        stored_queries[h] = {
+            'query': query,
+            'prev': undefined,
+            'next': undefined
+        };
+        stored_queries['entry'] = h;
+    } else if (stored_queries['entry'] !== h) {
+        if(stored_queries[h]) {
+            var prevHash = stored_queries[h]['prev'];
+            var nextHash = stored_queries[h]['next'];
+            if (prevHash) {
+                stored_queries[prevHash]['next'] = nextHash;
+            }
+            if (nextHash) {
+                stored_queries[nextHash]['prev'] = prevHash;
+            }
+        }
+
+        var oldEntry = stored_queries['entry'];
+        stored_queries[h] = {
+            'query': query,
+            'prev': h,
+            'next': oldEntry
+        };
+        stored_queries[oldEntry]['prev'] = h;
+        stored_queries['entry'] = h;
+    }
+
+    // TODO: prune old queries
+    localStorage[key] = JSON.stringify(stored_queries);
+};
+
+
+PGUI.QUERY.show_query_history = function () {
+    var key = PGUI.QUERY.config_key + '-stored-queries';
+    if (!(key in localStorage) || $.isEmptyObject(JSON.parse(localStorage[key]))) {
+        localStorage[key] = JSON.stringify({'entry': undefined});
+    }
+    var stored_queries = JSON.parse(localStorage[key]);
+
+    var make_query_link = function (h) {
+        if (h in stored_queries) {
+            return '<a class="query-history-select" href="javascript:void(0);">' + stored_queries[h]['query'] + '</a>';
+        }
+        return '';
+    };
+
+    var buff = ['<ul>'];
+    var h = stored_queries['entry'];
+    while (h in stored_queries && stored_queries[h]['next']) {
+        buff.push('<li>' + make_query_link(h) + '</li>');
+        h = stored_queries[h]['next'];
+    }
+    buff.push('<li>' + make_query_link(h) + '</li>');
+    buff.push('</ul>');
+    $('#query-history').html(buff.join('\n'));
+
+    $('.query-history-select').click(function () {
+        var query = $(this).html();
+        var active_tab = $('li[class="active"]').find('a')[0];
+        var eid = $(active_tab).attr('data-eid');
+        PGUI.QUERY.set_query(eid, query);
+        $('#query-history-dialog').modal('hide');
+    });
+
+    $('#query-history-dialog').modal();
+};
+
+
+PGUI.QUERY.run_query = function (eid) {
+    var query = PGUI.QUERY.get_query(eid);
+    PGUI.QUERY.store_query(query);
     $('#query-stats-' + eid).html('<span class="glyphicon glyphicon-refresh loading-spinner" aria-hidden="true"></span>');
     $.ajax({
         'method': 'POST',
@@ -172,8 +254,8 @@ PGUI.QUERY.run_query = function (eid) {
 
 
 PGUI.QUERY.run_explain = function (eid) {
-    var editor = PGUI.QUERY.EDITORS[eid];
-    var query = editor.getValue();
+    var query = PGUI.QUERY.get_query(eid);
+    PGUI.QUERY.store_query(query);
     $.ajax({
         'method': 'POST',
         'url': 'query/run-explain',
@@ -181,6 +263,21 @@ PGUI.QUERY.run_explain = function (eid) {
     }).done(function (data) {
         PGUI.QUERY.display_explain_result(eid, JSON.parse(data));
     });
+};
+
+
+PGUI.QUERY.get_query = function (eid) {
+    var editor = PGUI.QUERY.EDITORS[eid];
+    var query = editor.getSelection();
+    if (!query) {
+        query = editor.getValue();
+    }
+    return query;
+};
+
+PGUI.QUERY.set_query = function (eid, query) {
+    var editor = PGUI.QUERY.EDITORS[eid];
+    editor.setValue(query);
 };
 
 

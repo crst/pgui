@@ -11,3 +11,12 @@ $(document).ready(function () {
         }
     });
 });
+
+
+PGUI.hash = function(k) {
+    var result = 0;
+    for (var i = 0; i < k.length; i++) {
+        result = (((result << 11) - result) + k.charCodeAt(i)) | 0;
+    }
+    return result;
+};
