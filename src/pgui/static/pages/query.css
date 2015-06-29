@@ -34,3 +34,14 @@
     width: 100%;
     min-height: 40px;
 }
+
+#query-history-dialog {
+    font-size: 11px;
+    max-height: 80%;
+}
+
+#query-history-dialog .panel-heading,
+#query-history-dialog .panel-body {
+    padding: 0.5em;
+    white-space: pre;
+}

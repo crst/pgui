@@ -172,6 +172,7 @@ PGUI.QUERY.store_query = function (query) {
     if(!stored_queries['entry']) {
         stored_queries[h] = {
             'query': query,
+            'time': new Date(),
             'prev': undefined,
             'next': undefined
         };
@@ -191,6 +192,7 @@ PGUI.QUERY.store_query = function (query) {
         var oldEntry = stored_queries['entry'];
         stored_queries[h] = {
             'query': query,
+            'time': new Date(),
             'prev': h,
             'next': oldEntry
         };
@@ -198,7 +200,17 @@ PGUI.QUERY.store_query = function (query) {
         stored_queries['entry'] = h;
     }
 
-    // TODO: prune old queries
+    var MAX_QUERIES = 50; // TODO: make MAX_QUERIES configurable
+    var cur = stored_queries['entry'];
+    for (var i=0; i<MAX_QUERIES-1; i++) {
+        if (cur) {
+            cur = stored_queries[cur]['next'];
+        }
+    }
+    if (cur) {
+        stored_queries[cur]['next'] = undefined;
+    }
+
     localStorage[key] = JSON.stringify(stored_queries);
 };
 
@@ -210,21 +222,28 @@ PGUI.QUERY.show_query_history = function () {
     }
     var stored_queries = JSON.parse(localStorage[key]);
 
-    var make_query_link = function (h) {
+    var make_query_item = function (h) {
         if (h in stored_queries) {
-            return '<a class="query-history-select" href="javascript:void(0);">' + stored_queries[h]['query'] + '</a>';
+            var b = ['<div class="panel panel-default">'];
+            b.push('<div class="panel-heading">');
+            // TODO: improve formatting
+            var t = new Date(stored_queries[h]['time']);
+            b.push(t.getFullYear() + '-' + t.getDate() + '-' + t.getDay() + ' ' + t.getHours() + ':' + t.getMinutes());
+            b.push('</div>');
+            b.push('<div class="panel-body">');
+            b.push('<a class="query-history-select" href="javascript:void(0);">' + stored_queries[h]['query'] + '</a></div></div>');
+            return b.join('');
         }
         return '';
     };
 
-    var buff = ['<ul>'];
+    var buff = [];
     var h = stored_queries['entry'];
     while (h in stored_queries && stored_queries[h]['next']) {
-        buff.push('<li>' + make_query_link(h) + '</li>');
+        buff.push(make_query_item(h));
         h = stored_queries[h]['next'];
     }
-    buff.push('<li>' + make_query_link(h) + '</li>');
-    buff.push('</ul>');
+    buff.push(make_query_item(h));
     $('#query-history').html(buff.join('\n'));
 
     $('.query-history-select').click(function () {
