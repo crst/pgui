@@ -1,6 +1,7 @@
 
 var PGUI = {};
 
+
 $(document).ready(function () {
     $('body').keydown(function (e) {
         if (e.ctrlKey) {
@@ -11,6 +12,11 @@ $(document).ready(function () {
         }
     });
 });
+
+
+PGUI.get_storage_key = function (module, key) {
+    return PGUI.user + '-' + PGUI.host + '-' + PGUI.db + '-' + module + '-' + key;
+};
 
 
 PGUI.hash = function(k) {

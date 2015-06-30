@@ -2,13 +2,17 @@
 PGUI.QUERY = {};
 PGUI.QUERY.EDITORS = {};
 PGUI.QUERY.eid = 1;
-PGUI.QUERY.config_key = PGUI.user + '-' + PGUI.host + '-' + PGUI.db;
+
+PGUI.QUERY.storage_keys = {
+    'editor-content': PGUI.get_storage_key('QUERY', 'queries'),
+    'query-history': PGUI.get_storage_key('QUERY', 'history')
+};
 
 
 $(document).ready(function () {
-    var queries_key = PGUI.QUERY.config_key + '-queries';
-    if (PGUI.QUERY.config_key in localStorage && !$.isEmptyObject(JSON.parse(localStorage[queries_key]))) {
-        var q = JSON.parse(localStorage[queries_key]);
+    var key = PGUI.QUERY.storage_keys['editor-content'];
+    if (key in localStorage && !$.isEmptyObject(JSON.parse(localStorage[key]))) {
+        var q = JSON.parse(localStorage[key]);
         for (var k in q) {
             PGUI.QUERY.make_query_tab(k, q[k]);
             PGUI.QUERY.eid = Math.max(PGUI.QUERY.eid, k);
@@ -63,7 +67,7 @@ PGUI.QUERY.bind_events = function () {
         for (var k in PGUI.QUERY.EDITORS) {
             storage[k] = PGUI.QUERY.EDITORS[k].getValue();
         }
-        localStorage[PGUI.QUERY.config_key + '-queries'] = JSON.stringify(storage);
+        localStorage[PGUI.QUERY.storage_keys['editor-content']] = JSON.stringify(storage);
     });
 };
 
@@ -161,8 +165,7 @@ PGUI.QUERY.remove_query_tab = function (eid) {
 
 
 PGUI.QUERY.store_query = function (query) {
-    // TODO: build abstraction for keys
-    var key = PGUI.QUERY.config_key + '-stored-queries';
+    var key = PGUI.QUERY.storage_keys['query-history'];
     if (!(key in localStorage) || $.isEmptyObject(JSON.parse(localStorage[key]))) {
         localStorage[key] = JSON.stringify({'entry': undefined});
     }
@@ -216,7 +219,7 @@ PGUI.QUERY.store_query = function (query) {
 
 
 PGUI.QUERY.show_query_history = function () {
-    var key = PGUI.QUERY.config_key + '-stored-queries';
+    var key = PGUI.QUERY.storage_keys['query-history'];
     if (!(key in localStorage) || $.isEmptyObject(JSON.parse(localStorage[key]))) {
         localStorage[key] = JSON.stringify({'entry': undefined});
     }
