@@ -1,5 +1,21 @@
+/*
+  Main frontend module for the storage page.
+
+  Displays a tree map of all the relations within the currently
+  selected database.
+
+  TODO: this sort of works in a basic way, but is not very nice
+  (yet). Interactivity of the chart could be improved in various
+  ways. Not really tested how this works when there is a considerable
+  number of relations, or inherited tables. May also want to add some
+  other charts to the page.
+
+  Related files:
+    - storage.css: CSS for the storage page.
+*/
 
 PGUI.STORAGE = {};
+
 
 PGUI.STORAGE.mk_treemap_chart = function (data) {
     $('#treemap-chart').html('<div></div>');

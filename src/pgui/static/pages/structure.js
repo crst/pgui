@@ -1,3 +1,16 @@
+/*
+  Main frontend module for the structure page.
+
+  Displays static information about the database structure.
+
+  TODO: there are quite some information available from the catalog
+  that are not displayed yet. Also this should probably group
+  inherited relations.
+
+  Related files:
+    - structure.css: CSS for the structure page.
+*/
+
 
 PGUI.STRUCTURE = {};
 
@@ -7,7 +20,8 @@ PGUI.STRUCTURE.show_table_details = function (schema, table) {
     $('#table-details-' + schema + '-' + table).show();
 };
 
-
+// Asynchronously get the column sizes, because this requires a table
+// scan and may therefore take a while.
 PGUI.STRUCTURE.get_col_size = function (schema, table) {
     var header = $('#col-size-header-' + schema + '-' + table);
     header.html('<span class="glyphicon glyphicon-refresh loading-spinner" aria-hidden="true"></span>');

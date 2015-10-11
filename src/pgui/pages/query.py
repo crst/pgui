@@ -35,6 +35,7 @@ def Query(params=None):
     h.add_html(Navigation(page='query'))
     h.div(cls='container-fluid')
 
+    # Modal dialog for displaying previous queries
     h.div(cls='modal fade', id='query-history-dialog', tabindex='-1', role='dialog', aria_labelledby='Query History')
     h.div(cls='modal-dialog', role='document')
     h.div(cls='modal-content')
@@ -48,6 +49,7 @@ def Query(params=None):
     h.div(id='query-history').x()
     h.x('div').x('div').x('div').x('div')
 
+    # Tab bar controls
     h.div(id='query-panel', role='tabpanel')
     h.ul(id='query-nav-tabs', cls='nav nav-tabs', role='tablist')
     h.li(role='presentation').a(id='show-query-history', href='javascript:void(0);')
@@ -57,7 +59,7 @@ def Query(params=None):
     h.span(cls='add-tab glyphicon glyphicon-plus', aria_hidden='true').x()
     h.x('a').x('li')
     h.x('ul')
-
+    # Tab bar contents
     h.div(id='query-tab-panes', cls='tab-content')
     h.x('div')
     h.x('div')
@@ -76,6 +78,7 @@ def run_query():
         if err:
             return json.dumps({'success': False,
                                'error-msg': str(err)})
+        warning = None
         try:
             t1 = time.time()
             cur.execute(request.form['query'])
@@ -84,14 +87,16 @@ def run_query():
             data = cur.fetchall()
             t3 = time.time()
         except psycopg2.Warning as warn:
-            # TODO
-            pass
+            # TODO: display
+            warning = str(warn)
         except psycopg2.Error as err:
             return json.dumps({'success': False, 'error-msg': err.pgerror})
         except Exception as err:
+            # TODO: Display errors only in dev mode?
             return json.dumps({'success': False, 'error-msg': str(err)})
 
     return json.dumps({'success': True,
+                       'warning': warning,
                        'columns': columns,
                        'data': data,
                        'execution-time': (t2 - t1),
@@ -105,17 +110,18 @@ def run_explain():
         if err:
             return json.dumps({'success': False,
                                'error-msg': str(err)})
+        warning = None
         try:
             query = 'EXPLAIN (format json) %s' % request.form['query']
             cur.execute(query)
             data = cur.fetchall()
             plan = json.loads(data[0][0])
         except psycopg2.Warning as warn:
-            # TODO
-            pass
+            # TODO: display
+            warning = str(warn)
         except psycopg2.Error as err:
             return json.dumps({'success': False, 'error-msg': err.pgerror})
         except Exception as err:
             return json.dumps({'success': False, 'error-msg': str(err)})
 
-    return json.dumps({'success': True, 'data': plan})
+    return json.dumps({'success': True, 'warning': warning, 'data': plan})

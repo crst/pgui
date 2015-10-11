@@ -74,9 +74,7 @@ def Navigation(params=None, page=None):
     h.add_text(' Logout')
     h.x('a').x('li').x('ul')
 
-    h.x()
-    h.x()
-    h.x()
+    h.x().x().x()
 
     return h
 

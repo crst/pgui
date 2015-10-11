@@ -1,8 +1,20 @@
+/*
+  Main frontend module for the query page.
+
+  Responsible for running SQL queries and displaying the results.
+
+  Related files:
+    - query.css: CSS for the index page.
+    - query_completion.js: separate module for the autocompletion
+      within editors.
+*/
 
 PGUI.QUERY = {};
 PGUI.QUERY.EDITORS = {};
 PGUI.QUERY.eid = 1;
 
+
+// Storage keys for saved sessions and query history.
 PGUI.QUERY.storage_keys = {
     'editor-content': PGUI.get_storage_key('QUERY', 'queries'),
     'query-history': PGUI.get_storage_key('QUERY', 'history')
@@ -12,18 +24,24 @@ PGUI.QUERY.storage_keys = {
 $(document).ready(function () {
     var key = PGUI.QUERY.storage_keys['editor-content'];
     if (key in localStorage && !$.isEmptyObject(JSON.parse(localStorage[key]))) {
+        // Try to restore previous session from localstorage.
         var q = JSON.parse(localStorage[key]);
         for (var k in q) {
             PGUI.QUERY.make_query_tab(k, q[k]);
             PGUI.QUERY.eid = Math.max(PGUI.QUERY.eid, k);
         }
     } else {
+        // Otherwise create a new session
         PGUI.QUERY.make_query_tab(PGUI.QUERY.eid, '');
     }
+
+    // Enable interactivity
     PGUI.QUERY.bind_events();
 });
 
 
+// If there are display issues with an editor, it's probably a missing
+// call to refresh().
 PGUI.QUERY.refresh_editor = function (eid) {
     window.setTimeout(function() {
         PGUI.QUERY.EDITORS[eid].refresh();
@@ -31,6 +49,7 @@ PGUI.QUERY.refresh_editor = function (eid) {
 };
 
 
+// Enables all the interactive elements on the page.
 PGUI.QUERY.bind_events = function () {
     $('.run-query').unbind().click(function () {
         var eid = $(this).attr('data-eid');
@@ -72,6 +91,9 @@ PGUI.QUERY.bind_events = function () {
 };
 
 
+// Dynamically create a new query tab with an own editor, and add it
+// to the page. We do this in the frontend, because there is no need
+// for a round-trip.
 PGUI.QUERY.make_query_tab = function (eid, query) {
     var active = (eid === 1) ? 'active' : '';
     var nav_content = [
@@ -164,6 +186,11 @@ PGUI.QUERY.remove_query_tab = function (eid) {
 };
 
 
+// Query history
+// ----------------------------------------------------------------------------
+
+// Store query in a LIFO queue to localstorage. If the queue contains
+// more than MAX_QUERIES queries, remove the oldest one.
 PGUI.QUERY.store_query = function (query) {
     var key = PGUI.QUERY.storage_keys['query-history'];
     if (!(key in localStorage) || $.isEmptyObject(JSON.parse(localStorage[key]))) {
@@ -218,6 +245,7 @@ PGUI.QUERY.store_query = function (query) {
 };
 
 
+// Display the modal dialog with all the stored queries.
 PGUI.QUERY.show_query_history = function () {
     var key = PGUI.QUERY.storage_keys['query-history'];
     if (!(key in localStorage) || $.isEmptyObject(JSON.parse(localStorage[key]))) {
@@ -261,6 +289,11 @@ PGUI.QUERY.show_query_history = function () {
 };
 
 
+// Running queries
+// ----------------------------------------------------------------------------
+
+// Sends the query from the corresponding editor to the backend, and
+// displays the returned result as HTML table and CSV data.
 PGUI.QUERY.run_query = function (eid) {
     var query = PGUI.QUERY.get_query(eid);
     PGUI.QUERY.store_query(query);
@@ -270,11 +303,14 @@ PGUI.QUERY.run_query = function (eid) {
         'url': 'query/run-query',
         'data': {'query': query}
     }).done(function (data) {
+        // TODO: this approach obviously does not scale very well when
+        // there are too many result rows.
         PGUI.QUERY.display_query_result(eid, JSON.parse(data));
     });
 };
 
-
+// As run_query, but prefixes the query with EXPLAIN and displays the
+// returned plan as graph.
 PGUI.QUERY.run_explain = function (eid) {
     var query = PGUI.QUERY.get_query(eid);
     PGUI.QUERY.store_query(query);
@@ -287,7 +323,8 @@ PGUI.QUERY.run_explain = function (eid) {
     });
 };
 
-
+// Only return selected text from the corresponding editor, if there
+// is any. Otherwise just get the whole editor content.
 PGUI.QUERY.get_query = function (eid) {
     var editor = PGUI.QUERY.EDITORS[eid];
     var query = editor.getSelection();
@@ -297,12 +334,14 @@ PGUI.QUERY.get_query = function (eid) {
     return query;
 };
 
+// Set the content of the corresponding editor.
 PGUI.QUERY.set_query = function (eid, query) {
     var editor = PGUI.QUERY.EDITORS[eid];
     editor.setValue(query);
 };
 
-
+// Create the HTML table as well as the CSV content to display a query
+// result on the page.
 PGUI.QUERY.display_query_result = function (eid, result) {
     $('#query-stats-' + eid).html('');
     $('#result-tab-' + eid).tab('show');
@@ -338,12 +377,11 @@ PGUI.QUERY.display_query_result = function (eid, result) {
         stats += '<li><strong>' + result['execution-time'].toFixed(1) + 's</strong> query</li>';
         stats += '<li><strong>' + result['fetching-time'].toFixed(1) + 's</strong> fetching</li>';
     } else {
-        tbl = ['\
-<div class="alert alert-danger" role="alert">\
-  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>\
-  <span class="sr-only">Error:</span>\
-', result['error-msg'], '\
-</div>'];
+        tbl = ['<div class="alert alert-danger" role="alert">',
+               '<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>',
+               '<span class="sr-only">Error:</span>',
+               result['error-msg'],
+               '</div>'];
     }
 
     $('#query-result-' + eid).html(tbl.join(''));
@@ -354,11 +392,13 @@ PGUI.QUERY.display_query_result = function (eid, result) {
 };
 
 
+// Create the graph to display the query plan.
 PGUI.QUERY.display_explain_result = function (eid, result) {
     $('#explain-tab-' + eid).tab('show');
     var plans = result.data;
 
-    // TODO
+    // TODO: there is a lot to do here. This currently only works with
+    // very basic plans.
     for (var i in plans) {
         var plan = plans[i];
         var graph = new Springy.Graph();

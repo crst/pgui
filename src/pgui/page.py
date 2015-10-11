@@ -52,8 +52,8 @@ class Html(object):
         self.data.append(text)
         return self
 
-    def add_html(self, data):
-        self.data.append(data.render())
+    def add_html(self, content):
+        self.data.append(content.render())
         return self
 
     def x(self, tag=None):

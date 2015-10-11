@@ -1,3 +1,10 @@
+"""
+This is the start page for the application and includes all the
+different application modules listed in the PAGES variable.
+
+Renders the login page as well as the index page.
+"""
+
 from collections import defaultdict
 
 from flask import escape
@@ -8,6 +15,7 @@ from pages.shared import Header, Navigation, Footer
 from pg import pg_connection, pg_log_err, query
 
 
+# Defines all the available modules.
 PAGES = [
     {'name': 'index',
      'icon': 'home',
@@ -32,6 +40,12 @@ PAGES = [
 
 
 def Login(params=None, title=None):
+    """
+    Renders the login page.
+
+    There is no separate login for the application, this is passed to
+    the database!
+    """
     h = Html()
     h.add_text('<!DOCTYPE html>')
     h.html().head().title('pgui - Login').x()
@@ -42,7 +56,7 @@ def Login(params=None, title=None):
 
     h.div(cls='container')
     h.form(method='POST', cls='login')
-    h.h2('Connect to a database', cls='login-header').x()
+    h.h2('Connect to a postgres database server', cls='login-header').x()
 
     h.label('User name', fr='name', cls='sr-only').x()
     h.input(tpe='input', id='name', name='name', cls='form-control', placeholder='User name')
@@ -72,6 +86,10 @@ def Login(params=None, title=None):
 
 
 def handle_params(params):
+    """
+    Generic application settings that every module should support as
+    GET parameters.
+    """
     if 'database' in params:
         current_user.set_database(escape(params['database']))
 
@@ -80,6 +98,11 @@ def handle_params(params):
 
 
 def Index(params=None):
+    """
+    Renders the index page which displays some generic connections
+    information and links to all the activated modules.
+    """
+
     handle_params(params)
     h = Html()
 
@@ -88,6 +111,7 @@ def Index(params=None):
     h.add_html(Navigation(page='index'))
     h.div(cls='container-fluid')
 
+    # Connection information
     data, params = [], defaultdict(str)
     param_keys = ('server_version', 'server_encoding', 'client_encoding', 'is_superuser', 'TimeZone')
     with pg_connection(*current_user.get_config()) as (con, cur, err):
@@ -122,7 +146,7 @@ def Index(params=None):
     h.x().hr()
 
 
-    # Pages
+    # Modules
     cols = 12
     col_size = 4
     col = 0

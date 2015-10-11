@@ -1,3 +1,8 @@
+"""
+This should encapsulate all interactions with the database. Connection
+parameters are stored as properties of the User object.
+"""
+
 from contextlib import contextmanager
 import logging
 import os
@@ -5,6 +10,8 @@ from pkg_resources import resource_string
 
 from flask import flash
 import psycopg2
+# We do not want psycopg to convert results to Python objects, as we
+# generally just pass them to the frontend.
 psycopg2.extensions.string_types.clear()
 
 from config import DEFAULT_KEYMAP
@@ -37,12 +44,18 @@ def pg_log_err(log_msg=''):
         logging.error('%s: %s', log_msg, err)
 
 
+# TODO: Different postgres versions may require different queries. Add
+# functionality to automatically select the query that matches with
+# the version of the current database connection.
 def query(name):
     fn = 'queries/%s.sql' % name
     return resource_string(__name__, fn)
 
 
+# User object for the flask.ext.login extension.
 class User(object):
+    # TODO: Using just the name as key is not a good idea, and we
+    # probably also shouldn't remember the password here.
     users = {}
 
     def __init__(self, name, pw, db, host='localhost', port=5432, keymap=DEFAULT_KEYMAP):

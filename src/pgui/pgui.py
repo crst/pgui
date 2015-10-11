@@ -16,6 +16,15 @@ app.secret_key = config.SECRET_KEY
 
 # -----------------------------------------------------------------------------
 # Setup auth
+#
+# There is no real application auth, as we just use the database
+# connection parameters. To make this work with flask.ext.login, we
+# construct a (temporary) user on-the-fly at login. The auth check is
+# then if we can connect with the given parameters to the database.
+#
+# IMPORTANT: The application is not intended to be available on a
+# public network, as access to the application is basically equivalent
+# to direct access to the database!
 
 login_manager = LoginManager()
 login_manager.init_app(app)
