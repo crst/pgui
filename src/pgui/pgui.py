@@ -33,9 +33,9 @@ login_manager.login_message = ''
 login_manager.login_view = 'login'
 
 @login_manager.user_loader
-def load_user(name):
-    if name in User.users:
-        return User(name, *User.users[name])
+def load_user(key):
+    if key in User.users:
+        return User.users[key]
     return None
 
 @app.route("/login", methods=["GET", "POST"])
@@ -45,8 +45,10 @@ def login():
         pw = 'password' in request.form and escape(request.form['password']) or ''
         host = 'host' in request.form and escape(request.form['host']) or 'localhost'
         port = 'port' in request.form and int(escape(request.form['port'])) or 5432
-        login_user(User(name, pw, 'postgres', host, port))
-        return redirect(request.args.get('next') or url_for('index'))
+        u = User(name, pw, 'postgres', host, port)
+        if u.is_authenticated():
+            login_user(u)
+            return redirect(url_for('index'))
 
     err = get_flashed_messages()
     return pages.index.Login({'err': err}).render()

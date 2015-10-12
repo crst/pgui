@@ -4,6 +4,7 @@ parameters are stored as properties of the User object.
 """
 
 from contextlib import contextmanager
+from hashlib import sha512
 import logging
 import os
 from pkg_resources import resource_string
@@ -54,8 +55,6 @@ def query(name):
 
 # User object for the flask.ext.login extension.
 class User(object):
-    # TODO: Using just the name as key is not a good idea, and we
-    # probably also shouldn't remember the password here.
     users = {}
 
     def __init__(self, name, pw, db, host='localhost', port=5432, keymap=DEFAULT_KEYMAP):
@@ -65,6 +64,9 @@ class User(object):
         self.host = host
         self.port = port
         self.keymap = keymap
+
+        identifier = (self.name + '-' + self.host + '-' + str(self.port) + '-' + pw).encode('utf-8')
+        self.key = sha512(identifier).hexdigest()
         self._update_settings()
 
 
@@ -77,24 +79,20 @@ class User(object):
         self._update_settings()
 
     def _update_settings(self):
-        User.users[self.name] = (self.password, self.database, self.host, self.port, self.keymap)
-
-    def get_config(self):
-        return (self.name, self.password, self.database, self.host, self.port)
+        User.users[self.key] = self
 
     def is_authenticated(self):
         try:
-            con = psycopg2.connect(user=self.name,
-                                   password=self.password,
-                                   database=self.database,
-                                   host=self.host,
-                                   port=self.port)
-            con.close()
+            connection = psycopg2.connect(user=self.name,
+                                          password=self.password,
+                                          database=self.database,
+                                          host=self.host,
+                                          port=self.port)
+            connection.close()
+            return True
         except psycopg2.Error as err:
             flash(str(err))
-            return False
-
-        return True
+        return False
 
     def is_active(self):
         return True
@@ -103,4 +101,7 @@ class User(object):
         return False
 
     def get_id(self):
-        return self.name
+        return self.key
+
+    def get_config(self):
+        return (self.name, self.password, self.database, self.host, self.port)
