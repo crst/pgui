@@ -10,7 +10,7 @@ from collections import defaultdict
 from flask import escape
 from flask.ext.login import current_user
 
-from page import Html
+from page import Page
 from pages.shared import Header, Navigation, Footer
 from pg import pg_connection, pg_log_err, query
 
@@ -46,43 +46,49 @@ def Login(params=None, title=None):
     There is no separate login for the application, this is passed to
     the database!
     """
-    h = Html()
-    h.add_text('<!DOCTYPE html>')
-    h.html().head().title('pgui - Login').x()
-    h.link(href='static/lib/bootstrap/bootstrap-3.3.4-dist/css/bootstrap.css', rel='stylesheet')
-    h.link(href='static/login.css', rel='stylesheet')
-    h.x()
-    h.body()
+    p = Page()
+    p.content('<!DOCTYPE html>')
+    with p.html():
+        with p.head():
+            with p.title():
+                p.content('pgui - Login')
+            with p.link({'href': 'static/lib/bootstrap/bootstrap-3.3.4-dist/css/bootstrap.css', 'rel': 'stylesheet'}): pass
+            with p.link({'href': 'static/login.css', 'rel': 'stylesheet'}): pass
 
-    h.div(cls='container')
-    h.form(method='POST', cls='login')
-    h.h2('Connect to a postgres database server', cls='login-header').x()
+        with p.body():
 
-    h.label('User name', fr='name', cls='sr-only').x()
-    h.input(tpe='input', id='name', name='name', cls='form-control', placeholder='User name')
+            with p.div({'class': 'container'}):
+                with p.form({'method': 'POST', 'class': 'login'}):
+                    with p.h2({'class': 'login-header'}):
+                        p.content('Connect to a postgres database server')
 
-    h.label('Password', fr='password', cls='sr-only').x()
-    h.input(tpe='password', id='password', name='password', cls='form-control', placeholder='Password')
+                    with p.label({'for': 'name', 'class': 'sr-only'}):
+                        p.content('User name')
+                    with p.input({'type': 'input', 'id': 'name', 'name': 'name', 'class': 'form-control', 'placeholder': 'User name'}): pass
 
-    h.label('Host', fr='host', cls='sr-only').x()
-    h.input(tpe='input', id='host', name='host', cls='form-control', value='localhost')
+                    with p.label({'for': 'password', 'class': 'sr-only'}):
+                        p.content('Password')
+                    with p.input({'type': 'password', 'id': 'password', 'name': 'password', 'class': 'form-control', 'placeholder': 'Password'}): pass
 
-    h.label('Port', fr='port', cls='sr-only').x()
-    h.input(tpe='input', id='port', name='port', cls='form-control', value='5432')
+                    with p.label({'for': 'host', 'class': 'sr-only'}):
+                        p.control('Host')
+                    with p.input({'type': 'input', 'id': 'host', 'name': 'host', 'class': 'form-control', 'value': 'localhost'}): pass
 
-    h.button('Connect', args=['autofocus'], cls='btn btn-lg btn-success btn-block', tpe='submit').x()
-    h.x('form')
+                    with p.label({'for': 'port', 'class': 'sr-only'}):
+                        p.content('Port')
+                    with p.input({'type': 'input', 'id': 'port', 'name': 'port', 'class': 'form-control', 'value': '5432'}): pass
 
-    h.div(cls='login')
-    if 'err' in params and params['err']:
-        for err in params['err']:
-            h.code(err).x()
-    h.x()
+                    with p.button({'class': 'btn btn-lg btn-success btn-block', 'type': 'submit'}, args=['autofocus']):
+                        p.content('Connect')
 
-    h.x('div')
-    h.x('body').x()
 
-    return h
+                with p.div({'class': 'login'}):
+                    if 'err' in params and params['err']:
+                        for err in params['err']:
+                            with p.code():
+                                p.content(err)
+
+    return p
 
 
 def handle_params(params):
@@ -102,74 +108,69 @@ def Index(params=None):
     Renders the index page which displays some generic connections
     information and links to all the activated modules.
     """
-
     handle_params(params)
-    h = Html()
+    p = Page()
 
     # Header
-    h.add_html(Header(title='Index'))
-    h.add_html(Navigation(page='index'))
-    h.div(cls='container-fluid')
+    p.add_page(Header(title='Index'))
+    p.add_page(Navigation(page='index'))
 
-    # Connection information
-    data, params = [], defaultdict(str)
-    param_keys = ('server_version', 'server_encoding', 'client_encoding', 'is_superuser', 'TimeZone')
-    with pg_connection(*current_user.get_config()) as (con, cur, err):
-        for k in param_keys:
-            params[k] = con.get_parameter_status(k)
-        with pg_log_err('list databases'):
-            cur.execute(query('list-databases'))
-            data = cur.fetchall()
+    with p.div({'class': 'container-fluid'}):
+        # Connection information
+        data, params = [], defaultdict(str)
+        param_keys = ('server_version', 'server_encoding', 'client_encoding', 'is_superuser', 'TimeZone')
+        with pg_connection(*current_user.get_config()) as (con, cur, err):
+            for k in param_keys:
+                params[k] = con.get_parameter_status(k)
+            with pg_log_err('list databases'):
+                cur.execute(query('list-databases'))
+                data = cur.fetchall()
 
-    h.div(cls='row').div(cls='col-md-2')
-    h.div(cls='btn-group')
-    h.button('Switch database <span class="caret"></span>', cls='btn btn-default dropdown-toggle', data_toggle='dropdown', aria_expanded='false').x()
-    h.ul(cls='dropdown-menu', role='menu')
-    for n, d in enumerate(data):
-        h.li().a(d[0], href='index?database=%s' % d[0]).x().x()
-        if n < len(data) - 1:
-            h.li(cls='divider').x()
-    h.x().x().x()
+        with p.div({'class': 'row'}):
+            with p.div({'class': 'col-md-2'}):
+                with p.div({'class': 'btn-group'}):
+                    with p.button({'class': 'btn btn-default dropdown-toggle', 'data-toggle': 'dropdown', 'aria-expanded': 'false'}):
+                        p.content('Switch database <span class="caret"></span>')
+                    with p.ul({'class': 'dropdown-menu', 'role': 'menu'}):
+                        for n, d in enumerate(data):
+                            with p.li():
+                                with p.a({'href': 'index?database=%s' % d[0]}):
+                                    p.content(d[0])
+                            if n < len(data) - 1:
+                                with p.li({'class': 'divider'}): pass
 
-    h.div(cls='col-md-4 small')
-    h.add_text('<strong>%s</strong>' % current_user.database)
-    h.add_text('<br>%s@%s:%s' % (current_user.name, current_user.host, current_user.port))
-    h.x()
+            with p.div({'class': 'col-md-4 small'}):
+                p.content('<strong>%s</strong>' % current_user.database)
+                p.content('<br>%s@%s:%s' % (current_user.name, current_user.host, current_user.port))
 
-    h.div(cls='col-md-6 small')
-    h.ul(cls='list-inline')
-    for k, v in params.items():
-        h.li('%s: %s' % (k, v)).x()
-    h.x('ul')
-    h.x()
+            with p.div({'class': 'col-md-6 small'}):
+                with p.ul({'class': 'list-inline'}):
+                    for k, v in sorted(params.items()):
+                        with p.li():
+                            p.content('%s: %s' % (k, v))
 
-    h.x().hr()
+        with p.hr(): pass
 
+        # Modules
+        cols = 12
+        col_size = 4
+        col = 0
+        for page in PAGES[1:]:
+            if col == 0:
+                with p.div({'class': 'row'}, close=False): pass
 
-    # Modules
-    cols = 12
-    col_size = 4
-    col = 0
-    for page in PAGES[1:]:
-        if col == 0:
-            h.div(cls='row')
+            with p.div({'class': 'col-md-%s' % col_size}):
+                with p.a({'href': '/%s' % page['name']}):
+                    with p.div({'class': 'page-link'}):
+                        with p.span({'class': 'page-icon glyphicon glyphicon-%s' % page['icon']}): pass
+                        with p.h3():
+                            p.content(page['caption'])
+                        p.content(page['desc'])
 
-        h.div(cls='col-md-%s' % col_size)
-        h.a(href='/%s' % page['name'])
-        h.div(cls='page-link')
-        h.span(cls='page-icon glyphicon glyphicon-%s' % page['icon']).x()
-        h.h3(page['caption']).x()
-        h.add_text(page['desc'])
-        h.x()
-        h.x('a')
-        h.x('div')
+            col = (col + col_size) % cols
+            if col == 0:
+                p.close('div')
 
-        col = (col + col_size) % cols
-        if col == 0:
-            h.x()
+    p.add_page(Footer())
 
-    # Footer
-    h.x()
-    h.add_html(Footer())
-
-    return h
+    return p

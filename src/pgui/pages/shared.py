@@ -1,85 +1,88 @@
 from flask.ext.login import current_user as cu
 
 import pages.index
-from page import Html
+from page import Page
 
 
 def Header(params=None, title=None, css=None, js=None):
-    h = Html()
+    p = Page()
 
-    h.add_text('<!DOCTYPE html>')
-    h.html().head()
-    if title:
-        h.title('pgui - %s/%s' % (cu.database, title)).x()
+    p.content('<!DOCTYPE html>')
+    with p.html(close=False):
+        with p.head():
+            with p.title():
+                p.content('pgui - %s/%s' % (cu.database, title))
 
-    h.meta(charset='utf-8')
-    h.script(src='static/lib/jquery/jquery-2.1.3.js').x()
-    h.script(src='static/pgui.js').x()
-    h.link(href='static/pgui.css', rel='stylesheet')
-    h.link(href='static/lib/bootstrap/bootstrap-3.3.4-dist/css/bootstrap.css', rel='stylesheet')
-    h.link(href='static/lib/codemirror/codemirror-5.1/lib/codemirror.css', rel='stylesheet')
-    h.link(href='static/lib/codemirror/codemirror-5.1/theme/neo.css', rel='stylesheet')
-    h.link(href='static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.css', rel='stylesheet')
-    if css:
-        for c in css:
-            h.link(href=c, rel='stylesheet')
-    h.script(src='static/lib/bootstrap/bootstrap-3.3.4-dist/js/bootstrap.js').x()
-    h.script(src='static/lib/codemirror/codemirror-5.1/lib/codemirror.js').x()
-    h.script(src='static/lib/codemirror/codemirror-5.1/keymap/emacs.js').x()
-    h.script(src='static/lib/codemirror/codemirror-5.1/keymap/vim.js').x()
-    h.script(src='static/lib/codemirror/codemirror-5.1/keymap/sublime.js').x()
-    h.script(src='static/lib/codemirror/codemirror-5.1/mode/sql/sql.js').x()
-    h.script(src='static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.js').x()
-    if js:
-        for j in js:
-            h.script(src=j).x()
+            with p.meta({'charset': 'utf-8'}): pass
+            with p.script({'src': 'static/lib/jquery/jquery-2.1.3.js'}): pass
+            with p.script({'src': 'static/pgui.js'}): pass
+            with p.link({'href': 'static/pgui.css', 'rel': 'stylesheet'}): pass
+            with p.link({'href': 'static/lib/bootstrap/bootstrap-3.3.4-dist/css/bootstrap.css', 'rel': 'stylesheet'}): pass
+            with p.link({'href': 'static/lib/codemirror/codemirror-5.1/lib/codemirror.css', 'rel': 'stylesheet'}): pass
+            with p.link({'href': 'static/lib/codemirror/codemirror-5.1/theme/neo.css', 'rel': 'stylesheet'}): pass
+            with p.link({'href': 'static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.css', 'rel': 'stylesheet'}): pass
+            if css:
+                for c in css:
+                    with p.link({'href': c, 'rel': 'stylesheet'}): pass
+            with p.script({'src': 'static/lib/bootstrap/bootstrap-3.3.4-dist/js/bootstrap.js'}): pass
+            with p.script({'src': 'static/lib/codemirror/codemirror-5.1/lib/codemirror.js'}): pass
+            with p.script({'src': 'static/lib/codemirror/codemirror-5.1/keymap/emacs.js'}): pass
+            with p.script({'src': 'static/lib/codemirror/codemirror-5.1/keymap/vim.js'}): pass
+            with p.script({'src': 'static/lib/codemirror/codemirror-5.1/keymap/sublime.js'}): pass
+            with p.script({'src': 'static/lib/codemirror/codemirror-5.1/mode/sql/sql.js'}): pass
+            with p.script({'src': 'static/lib/codemirror/codemirror-5.1/addon/hint/show-hint.js'}): pass
+            if js:
+                for j in js:
+                    with p.script({'src': j}): pass
 
-    h.x('head').body()
-    config = 'PGUI.user = "%s"; PGUI.db = "%s"; PGUI.host = "%s";' % (cu.name, cu.database, cu.host)
-    h.script().add_text(config).x()
-    return h
+        with p.body(close=False):
+            config = 'PGUI.user = "%s"; PGUI.db = "%s"; PGUI.host = "%s";' % (cu.name, cu.database, cu.host)
+            with p.script():
+                p.content(config)
+
+    return p
 
 
 def Navigation(params=None, page=None):
-    h = Html()
+    p = Page()
 
-    h.nav(cls='navbar navbar-default')
-    h.div(cls='container-fluid')
-    h.div(cls='navbar-header')
-    h.button(tpe='button', cls='navbar-toggle collapsed',
-               data_toggle='collapse', data_target='#navbar',
-               aria_expanded='false', aria_controls='navbar')
-    h.span('Toggle navigation', cls='sr-only').x()
-    h.span(cls='icon-bar').x()
-    h.span(cls='icon-bar').x()
-    h.span(cls='icon-bar').x()
-    h.x()
+    with p.nav({'class': 'navbar navbar-default'}):
+        with p.div({'class': 'container-fluid'}):
+            with p.div({'class': 'navbar-header'}):
+                with p.button({'type': 'button',
+                               'class': 'navbar-toggle collapsed',
+                               'data-toggle': 'collapse',
+                               'data-target': '#navbar',
+                               'aria-expanded': 'false',
+                               'aria-controls': 'navbar'}):
+                    with p.span({'class': 'sr-only'}):
+                        p.content('Toggle navigation')
+                    with p.span({'class': 'icon-bar'}): pass
+                    with p.span({'class': 'icon-bar'}): pass
+                    with p.span({'class': 'icon-bar'}): pass
 
-    h.a('pgui', cls='navbar-brand', href='/').x()
-    h.x()
+                with p.a({'class': 'navbar-brand', 'href': '/'}):
+                    p.content('pgui')
 
-    h.div(id='navbar', cls='navbar-collapse collapse')
-    h.ul(cls='nav navbar-nav')
-    for i, page in enumerate(pages.index.PAGES, 1):
-        active = page['name'] == page and 'active' or ''
-        h.li(cls=active).a(id='page-%s' % i, href='/%s' % page['name'])
-        h.span(cls='glyphicon glyphicon-%s' % page['icon']).x()
-        h.add_text(' %s' % page['name'].title())
-        h.x().x()
-    h.x()
+            with p.div({'id': 'navbar', 'class': 'navbar-collapse collapse'}):
+                with p.ul({'class': 'nav navbar-nav'}):
+                    for i, page in enumerate(pages.index.PAGES, 1):
+                        active = page['name'] == page and 'active' or ''
+                        with p.li({'class': active}):
+                            with p.a({'id': 'page-%s' % i, 'href': '/%s' % page['name']}):
+                                with p.span({'class': 'glyphicon glyphicon-%s' % page['icon']}): pass
+                                p.content(' %s' % page['name'].title())
 
-    h.ul(cls='nav navbar-nav navbar-right')
-    h.li().a(href='/logout')
-    h.span(cls='glyphicon glyphicon-log-out').x()
-    h.add_text(' Logout')
-    h.x('a').x('li').x('ul')
+                with p.ul({'class': 'nav navbar-nav navbar-right'}):
+                    with p.li():
+                        with p.a({'href': '/logout'}):
+                            with p.span({'class': 'glyphicon glyphicon-log-out'}):
+                                p.content(' Logout')
 
-    h.x().x().x()
-
-    return h
+    return p
 
 
 def Footer(params=None):
-    h = Html()
-    h.x('body').x('html')
-    return h
+    p = Page()
+    p.close('body').close('html')
+    return p

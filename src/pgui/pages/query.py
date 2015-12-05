@@ -1,7 +1,7 @@
 import json
 import time
 
-from page import Html
+from page import Page
 from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
 from pg import pg_connection
@@ -21,54 +21,51 @@ def query_view():
 
 def Query(params=None):
     handle_params(params)
-    h = Html()
+    p = Page()
 
     # Header
-    h.add_html(Header(title='Query',
-                       js=['static/pages/query.js',
-                           'static/pages/query_completion.js',
-                           'static/pages/keywords.js',
-                           'static/lib/springy/springy.js',
-                           'static/lib/springy/springyui.js'],
-                       css=['static/pages/query.css']))
-    h.script('PGUI.QUERY.keymap = "%s";' % current_user.keymap).x()
-    h.add_html(Navigation(page='query'))
-    h.div(cls='container-fluid')
+    p.add_page(Header(title='Query',
+                      js=['static/pages/query.js',
+                          'static/pages/query_completion.js',
+                          'static/pages/keywords.js',
+                          'static/lib/springy/springy.js',
+                          'static/lib/springy/springyui.js'],
+                      css=['static/pages/query.css']))
+    with p.script():
+        p.content('PGUI.QUERY.keymap = "%s";' % current_user.keymap)
+    p.add_page(Navigation(page='query'))
 
-    # Modal dialog for displaying previous queries
-    h.div(cls='modal fade', id='query-history-dialog', tabindex='-1', role='dialog', aria_labelledby='Query History')
-    h.div(cls='modal-dialog', role='document')
-    h.div(cls='modal-content')
-    h.div(cls='modal-header')
-    h.button(tpe='button', cls='close', data_dismiss='modal', aria_label='Close')
-    h.span('&times;', aria_hidden='true').x()
-    h.x('button')
-    h.h4('Query history', cls='modal-title', id='query-history-label').x()
-    h.x('div')
-    h.div(cls='modal-body')
-    h.div(id='query-history').x()
-    h.x('div').x('div').x('div').x('div')
+    with p.div({'class': 'container-fluid'}):
+        # Modal dialog for displaying previous queries
+        with p.div({'class': 'modal fade', 'id': 'query-history-dialog', 'tabindex': '-1', 'role': 'dialog', 'aria-labelledby': 'Query History'}):
+            with p.div({'class': 'modal-dialog', 'role': 'document'}):
+                with p.div({'class': 'modal-content'}):
+                    with p.div({'class': 'modal-header'}):
+                        with p.button({'type': 'button', 'class': 'close', 'data-dismiss': 'modal', 'aria-label': 'Close'}):
+                            with p.span({'aria-hidden': 'true'}):
+                                p.content('&times;')
+                        with p.h4({'class': 'modal-title', 'id': 'query-history-label'}):
+                            p.content('Query history')
 
-    # Tab bar controls
-    h.div(id='query-panel', role='tabpanel')
-    h.ul(id='query-nav-tabs', cls='nav nav-tabs', role='tablist')
-    h.li(role='presentation').a(id='show-query-history', href='javascript:void(0);')
-    h.span(cls='add-tab glyphicon glyphicon-camera', aria_hidden='true').x()
-    h.x('a').x('li')
-    h.li(role='presentation').a(id='add-tab', href='javascript:void(0);')
-    h.span(cls='add-tab glyphicon glyphicon-plus', aria_hidden='true').x()
-    h.x('a').x('li')
-    h.x('ul')
-    # Tab bar contents
-    h.div(id='query-tab-panes', cls='tab-content')
-    h.x('div')
-    h.x('div')
+                    with p.div({'clas': 'modal-body'}):
+                        with p.div({'id': 'query-history'}): pass
+
+        # Tab bar controls
+        with p.div({'id': 'query-panel', 'role': 'tabpanel'}):
+            with p.ul({'id': 'query-nav-tabs', 'class': 'nav nav-tabs', 'role': 'tablist'}):
+                with p.li({'role': 'presentation'}):
+                    with p.a({'id': 'show-query-history', 'href': 'javascript:void(0);'}):
+                        with p.span({'class': 'add-tab glyphicon glyphicon-camera', 'aria-hidden': 'true'}): pass
+                with p.li({'role': 'presentation'}):
+                    with p.a({'id': 'add-tab', 'href': 'javascript:void(0);'}):
+                        with p.span({'class': 'add-tab glyphicon glyphicon-plus', 'aria-hidden': 'true'}): pass
+            # Tab bar contents
+            with p.div({'id': 'query-tab-panes', 'class': 'tab-content'}): pass
 
     # Footer
-    h.x('div')
-    h.add_html(Footer())
+    p.add_page(Footer())
 
-    return h
+    return p
 
 
 @query_page.route('/query/run-query', methods=['POST'])

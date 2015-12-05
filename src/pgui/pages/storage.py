@@ -3,7 +3,7 @@ import json
 from flask import Blueprint, request
 from flask.ext.login import current_user, login_required
 
-from page import Html
+from page import Page
 from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
 from pg import pg_connection, pg_log_err, query
@@ -35,44 +35,40 @@ def Storage(params=None):
             treemap_data['children'].append({'schema_name': schema_name, 'name': table_name,
                                              'size': int(t_size), 'rows': int(t_tuples)})
 
-    h = Html()
+    p = Page()
 
     # Header
-    h.add_html(Header(title='Storage',
+    p.add_page(Header(title='Storage',
                       js=['static/pages/storage.js',
                           'static/lib/d3/d3.js',
                           'static/lib/d3/lib/colorbrewer/colorbrewer.js'],
                       css=['static/pages/storage.css']))
-    h.add_html(Navigation(page='storage'))
-    h.div(cls='container-fluid')
+    p.add_page(Navigation(page='storage'))
+    with p.div({'class': 'container-fluid'}):
+        with p.div({'class': 'row form-row'}):
+            with p.div({'class': 'col-md-10'}):
+                with p.form({'id': 'schema-form', 'class': 'form-inline'}):
+                    for schema in schemas:
+                        with p.label({'class': 'checkbox-inline'}):
+                            checked = (schema in display_schemas or len(display_schemas) == 0) and 'checked' or ''
+                            with p.input({'type': 'checkbox', 'name': 'schema', 'value': '%s' % schema}, args=[checked]):
+                                p.content(schema)
 
-    h.div(cls='row form-row').div(cls='col-md-10')
-    h.form(id='schema-form', cls='form-inline')
-    for schema in schemas:
-        h.label(cls='checkbox-inline')
-        checked = (schema in display_schemas or len(display_schemas) == 0) and 'checked' or ''
-        h.input(tpe='checkbox', name='schema', value='%s' % schema, args=[checked]).add_text(schema)
-        h.x()
-    h.x('form').x()
+            with p.div({'class': 'col-md-2'}):
+                with p.form({'id': 'mode-form', 'class': 'form-inline'}):
+                    with p.label({'class': 'radio-inline'}):
+                        with p.input({'type': 'radio', 'name': 'mode', 'value': 'size'}, args=['checked']):
+                            p.content('Size')
+                    with p.label({'class': 'radio-inline'}):
+                        with p.input({'type': 'radio', 'name': 'mode', 'value': 'rows'}):
+                            p.content('Rows (est.)')
 
-    h.div(cls='col-md-2')
-    h.form(id='mode-form', cls='form-inline')
-    h.label(cls='radio-inline')
-    h.input(tpe='radio', name='mode', value='size', args=['checked']).add_text('Size')
-    h.x()
-    h.label(cls='radio-inline')
-    h.input(tpe='radio', name='mode', value='rows').add_text('Rows (est.)')
-    h.x().x()
-    h.x('div').x('div')
+        with p.div({'class': 'row'}):
+            with p.div({'class': 'col-md-12'}):
+                with p.div({'id': 'treemap-chart'}): pass
+                with p.script():
+                    p.content('PGUI.STORAGE.mk_treemap_chart(%s);' % json.dumps(treemap_data))
 
-    h.div(cls='row').div(cls='col-md-12')
-    h.div(id='treemap-chart').x()
-    h.script('PGUI.STORAGE.mk_treemap_chart(%s);' % json.dumps(treemap_data)).x()
-    h.x()
-    h.x('div') # row
+    p.add_page(Footer())
 
-    # Footer
-    h.x()
-    h.add_html(Footer())
-
-    return h
+    return p

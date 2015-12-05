@@ -4,7 +4,7 @@ import json
 from flask import Blueprint, request, escape
 from flask.ext.login import current_user, login_required
 
-from page import Html
+from page import Page
 from pages.index import handle_params
 from pages.shared import Header, Navigation, Footer
 from pg import pg_connection, pg_log_err, query
@@ -20,90 +20,79 @@ def structure_view():
 
 def Structure(params=None):
     handle_params(params)
-    h = Html()
+    p = Page()
 
     # Header
-    h.add_html(Header(title='Structure',
+    p.add_page(Header(title='Structure',
                       js=['static/pages/structure.js'],
                       css=['static/pages/structure.css']))
-    h.add_html(Navigation(page='structure'))
-    h.div(cls='container-fluid')
+    p.add_page(Navigation(page='structure'))
 
-    schemas, schema_cols, table_data, table_cols = get_data()
+    with p.div({'class': 'container-fluid'}):
+        schemas, schema_cols, table_data, table_cols = get_data()
 
-    h.ul()
-    for schema in schemas:
-        h.div(cls='panel panel-default')
+        with p.ul():
+            for schema in schemas:
+                with p.div({'class': 'panel panel-default'}):
+                    with p.div({'class': 'panel-heading'}):
+                        with p.div({'class': 'row'}):
+                            with p.div({'class': 'col-md-2'}):
+                                with p.a({'class': 'btn btn-success btn-xs schema-btn',
+                                          'data-toggle': 'collapse',
+                                          'href': '#%s' % schema[0],
+                                          'aria-expanded': 'false',
+                                          'aria-controls': schema[0]}):
+                                    p.content('%s - %s' % (schema[0], schema[1]))
 
-        h.div(cls='panel-heading')
-        h.div(cls='row')
-        h.div(cls='col-md-2')
-        h.a('%s - %s' % (schema[0], schema[1]), cls='btn btn-success btn-xs schema-btn',
-            data_toggle='collapse', href='#%s' % schema[0], aria_expanded='false', aria_controls=schema[0])
-        h.x()
-        h.x('div') # col-md-2
+                            with p.div({'class': 'col-md-10'}):
+                                with p.ul({'class': 'list-inline'}):
+                                    for i, col in enumerate(schema_cols, 2):
+                                        with p.li():
+                                            p.content('<strong>%s</strong> %s' % (schema[i], col))
 
-        h.div(cls='col-md-10')
-        h.ul(cls='list-inline')
-        for i, col in enumerate(schema_cols, 2):
-            h.li('<strong>%s</strong> %s' % (schema[i], col)).x()
-        h.x()
-        h.x()
-        h.x() # row
-        h.x() # panel header
+                    with p.div({'class': 'panel-body'}):
+                        with p.div({'class': 'row collapse', 'id': schema[0]}):
+                            with p.div({'class': 'col-md-2'}):
+                                with p.div({'class': 'well'}):
+                                    with p.b():
+                                        p.content('Tables')
 
-        h.div(cls='panel-body')
-        h.div(cls='row collapse', id=schema[0])
-        h.div(cls='col-md-2')
-        h.div(cls='well')
+                                    with p.ul():
+                                        for table in table_data[schema[0]]:
+                                            with p.li():
+                                                with p.a({'href': '#', 'onclick': 'PGUI.STRUCTURE.show_table_details(\'%s\', \'%s\'); return false;' % (schema[0], table)}):
+                                                    p.content(table)
 
-        h.b('Tables').x()
-        h.ul()
-        for table in table_data[schema[0]]:
-            h.li()
-            h.a(table, href='#', onclick='PGUI.STRUCTURE.show_table_details(\'%s\', \'%s\'); return false;' % (schema[0], table)).x()
-            h.x('li')
-        h.x('ul')
+                            with p.div({'class': 'col-md-10'}):
+                                for table in table_data[schema[0]]:
+                                    with p.div({'id': 'table-details-%s-%s' % (schema[0], table), 'class': 'table-details table-details-%s' % schema[0]}):
+                                        data = table_data[schema[0]][table]
+                                        with p.p():
+                                            p.content('Table size: ')
+                                            with p.b():
+                                                p.content(data['table-size'])
 
-        h.x()
-        h.x()
+                                        with p.table({'class': 'table table-condensed'}):
+                                            with p.tr():
+                                                for tc in table_cols:
+                                                    with p.th():
+                                                        p.content(tc)
+                                                with p.th({'id': 'col-size-header-%s-%s' % (schema[0], table)}):
+                                                    with p.a({'href': '#',
+                                                              'onclick': 'PGUI.STRUCTURE.get_col_size(\'%s\', \'%s\'); return false;' % (schema[0], table)}):
+                                                        p.content('Get column sizes')
 
-        h.div(cls='col-md-10')
-        for table in table_data[schema[0]]:
-            h.div(id='table-details-%s-%s' % (schema[0], table), cls='table-details table-details-%s' % schema[0])
-            data = table_data[schema[0]][table]
-            h.p('Table size: ').b(data['table-size']).x().x()
-            h.table(cls='table table-condensed')
-            h.tr()
-            for tc in table_cols:
-                h.th(tc).x()
-            h.th(id='col-size-header-%s-%s' % (schema[0], table))
-            h.a('Get column sizes',
-                href='#',
-                onclick='PGUI.STRUCTURE.get_col_size(\'%s\', \'%s\'); return false;' % (schema[0], table)).x()
-            h.x()
-            h.x('tr')
-            for row in zip(*data['column-data'].values()):
-                h.tr()
-                for col in row:
-                    h.td(col).x()
-                h.td(id='col-size-%s-%s-%s' % (schema[0], table, row[0])).x()
-                h.x('tr')
-            h.x('table')
-            h.x('div')
-        h.x()
+                                            for row in zip(*data['column-data'].values()):
+                                                with p.tr():
+                                                    for col in row:
+                                                        with p.td():
+                                                            p.content(col)
+                                                    with p.td({'id': 'col-size-%s-%s-%s' % (schema[0], table, row[0])}):
+                                                        pass
 
-        h.x()
-        h.x() # panel body
+    p.add_page(Footer())
 
-        h.x() # panel
-    h.x()
-
-    # Footer
-    h.x()
-    h.add_html(Footer())
-
-    return h
+    return p
 
 
 def get_data():

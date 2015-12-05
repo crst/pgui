@@ -1,67 +1,58 @@
-from functools import partial, reduce
+from contextlib import contextmanager
 
-class Html(object):
+
+class Page(object):
+    ctags = set(('hr', 'input', 'meta', 'link'))
+
     def __init__(self):
-        self.data = []
-        self.stack = []
-        self.tags = (
-            'html', 'head', 'title', 'meta', 'link', 'script', 'body',
-            'a',
-            'b', 'button',
-            'canvas', 'code',
-            'div',
-            'form',
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr',
-            'input',
-            'label', 'li',
-            'nav',
-            'p', 'pre',
-            'span', 'svg',
-            'table', 'td', 'th', 'tr', 'textarea',
-            'ul',
-        )
-        self.ctags = set(('hr', 'input', 'meta', 'link'))
-        self.tokens = {
-            'cls': 'class',
-            'fr' : 'for',
-            'tpe': 'type',
-            '_': '-',
-        }
-
-        def add_tag(tag_name, content='', **kwargs):
-            return self.add(tag_name, content, **kwargs)
-
-        for tag in self.tags:
-            setattr(self, tag, partial(add_tag, tag))
-
-    def _replace_tokens(self, text):
-        return reduce(lambda acc, val: acc.replace(val[0], val[1]), self.tokens.items(), text)
-
-    def add(self, tag, content='', **kwargs):
-        params = ''.join([' %s="%s"' % (self._replace_tokens(k), v) for k, v in kwargs.items() if k != 'args'])
-        args = 'args' in kwargs and ' '.join(kwargs['args']) or ''
-        if tag in self.ctags:
-            closing = ' /'
-        else:
-            self.stack.append(tag)
-            closing = ''
-        self.data.append('<%s %s%s%s>%s\n' % (tag, args, params, closing, content))
-        return self
-
-    def add_text(self, text):
-        self.data.append(text)
-        return self
-
-    def add_html(self, content):
-        self.data.append(content.render())
-        return self
-
-    def x(self, tag=None):
-        if len(self.stack) > 0 and (not tag or tag == self.stack[-1]):
-            tag = self.stack.pop()
-        if tag:
-            self.data.append('</%s>\n' % tag)
-        return self
+        self._buffer = []
+        self._indent = 0
+        self._tabsize = 2
 
     def render(self):
-        return ''.join(self.data)
+        return ''.join(self._buffer)
+
+    def add_page(self, page):
+        self._buffer.append(page.render())
+        return self
+
+    def content(self, text):
+        self._buffer.append('%s%s\n' % (self._get_spaces(), text))
+        return self
+
+    def close(self, tag):
+        self._buffer.append('%s</%s>' % (self._get_spaces(), tag))
+        self._indent -= self._tabsize
+        return self
+
+    def _get_spaces(self):
+        return self._indent * ' '
+
+    def __getattr__(self, name):
+        @contextmanager
+        def handler(*args, **kwargs):
+            params = ''
+            if len(args) == 1:
+                params = ''.join([' %s="%s"' % (k, v) for k, v in args[0].items()])
+
+            args = ''
+            if 'args' in kwargs:
+                args = ' ' + ' '.join(kwargs['args'])
+
+            closing = ''
+            if name in Page.ctags:
+                closing = ' /'
+
+            self._buffer.append('%s<%s%s%s%s>\n' % (self._get_spaces(), name, params, args, closing))
+            self._indent += self._tabsize
+            yield self
+            self._indent -= self._tabsize
+
+            close = True
+            if 'close' in kwargs:
+                close = kwargs['close']
+
+            if not name in Page.ctags and close:
+                self._buffer.append('%s</%s>\n' % (self._get_spaces(), name))
+
+        return handler
